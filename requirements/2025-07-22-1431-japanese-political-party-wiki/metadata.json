@@ -1,0 +1,23 @@
+{
+  "id": "japanese-political-party-wiki",
+  "started": "2025-07-22T14:31:00+09:00",
+  "lastUpdated": "2025-07-22T14:50:00+09:00",
+  "status": "completed",
+  "phase": "complete",
+  "progress": {
+    "discovery": { "answered": 5, "total": 5 },
+    "detail": { "answered": 5, "total": 5 }
+  },
+  "contextFiles": [
+    "/frontend/package.json",
+    "/frontend/app/layout.tsx",
+    "/frontend/components/ui/",
+    "/doc/reserch.md"
+  ],
+  "relatedFeatures": [
+    "Assistant UI (チャット実装)",
+    "shadcn/ui components",
+    "Tailwind CSS v4",
+    "Mastra (AI統合)"
+  ]
+}
