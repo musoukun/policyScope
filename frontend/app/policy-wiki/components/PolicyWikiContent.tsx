@@ -21,14 +21,14 @@ export function PolicyWikiContent({ parties }: PolicyWikiContentProps) {
 	}
 
 	return (
-		<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-			{/* 左側：政党要約（半分） */}
-			<div>
+		<div className="grid grid-cols-1 lg:grid-cols-5 gap-6 h-full">
+			{/* 左側：政党要約（3/5） */}
+			<div className="lg:col-span-3 min-h-0">
 				<PartySummary party={selectedParty} />
 			</div>
 
-			{/* 右側：最新ニュース（半分） */}
-			<div>
+			{/* 右側：最新ニュース（2/5） */}
+			<div className="lg:col-span-2 min-h-0">
 				<PartyNews party={selectedParty} />
 			</div>
 		</div>

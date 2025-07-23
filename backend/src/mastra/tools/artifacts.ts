@@ -17,19 +17,17 @@ export const artifactsTool = createTool({
 		code: z.string(),
 		message: z.string(),
 	}),
-	execute: async ({ input }) => {
+	execute: async ({ context }) => {
 		// このツールは実際には何も実行しない
 		// フロントエンドがこのツール呼び出しを検出して表示する
 		console.log(
 			"artifacts tool called with code length:",
-			input.code.length
+			context.code.length
 		);
 		return {
 			success: true,
-			code: input.code,
+			code: context.code,
 			message: "HTML code ready for rendering",
 		};
 	},
 });
-
-export default artifactsTool;

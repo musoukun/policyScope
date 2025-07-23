@@ -3,16 +3,8 @@
 import type { Party, PartySummary as PartySummaryType } from "@/types/party";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
-import { useState, useEffect } from "react";
-import { savePartySummary } from "@/app/actions/parties";
-import {
-	AssistantRuntimeProvider,
-	makeAssistantToolUI,
-	useThread,
-	useThreadRuntime,
-} from "@assistant-ui/react";
-import { useChatRuntime } from "@assistant-ui/react-ai-sdk";
-import { ArtifactsView } from "./ArtifactsView";
+import { useState } from "react";
+import { getPartyResearchAgent } from "@/lib/mastra-client";
 
 interface PartySummaryProps {
 	party: Party;
@@ -20,210 +12,213 @@ interface PartySummaryProps {
 	onSummaryUpdate?: (summary: PartySummaryType) => void;
 }
 
-// 内部コンポーネント：AssistantRuntimeProvider内で動作
-function PartySummaryContent({
-	party,
-	summary,
-	onSummaryUpdate,
-	latestContent,
-	setLatestContent,
-	isGenerating,
-	setIsGenerating,
-}: PartySummaryProps & {
-	latestContent: string;
-	setLatestContent: (content: string) => void;
-	isGenerating: boolean;
-	setIsGenerating: (generating: boolean) => void;
-}) {
-	// Threadの状態を監視
-	const messages = useThread((thread) => thread.messages);
-
-	// メッセージの状態を監視して生成状態を更新
-	useEffect(() => {
-		if (messages && messages.length > 0) {
-			const lastMessage = messages[messages.length - 1];
-			if (lastMessage.role === "assistant") {
-				const isComplete = lastMessage.content.some(
-					(c) => c.type === "text" && c.text?.includes("完了")
-				);
-				if (isComplete) {
-					setIsGenerating(false);
-				}
-			}
-		}
-	}, [messages, setIsGenerating]);
-
-	// artifactsツールのUI定義 - HTMLコンテンツを検出して保存
-	const ArtifactsToolUI = makeAssistantToolUI<{ code: string }, void>({
-		toolName: "artifacts",
-		render: ({ args, toolName, result }) => {
-			console.log("ArtifactsToolUI called:", { toolName, args, result });
-
-			// HTMLコンテンツを検出したら保存
-			if (args?.code) {
-				// 即座にコンテンツを設定
-				setLatestContent(args.code);
-				setIsGenerating(false);
-
-				// 非同期で保存
-				savePartySummary(party.id, args.code)
-					.then((saved) => {
-						if (saved && onSummaryUpdate) {
-							onSummaryUpdate(saved);
-						}
-					})
-					.catch((error) => {
-						console.error("Failed to save party summary:", error);
-					});
-			}
-
-			// デバッグ用の表示（本番環境では削除）
-			return (
-				<div className="hidden">
-					<p>
-						Artifacts tool called with {args?.code?.length || 0}{" "}
-						chars
-					</p>
-				</div>
-			);
-		},
-	});
-
-	// Thread runtimeを取得
-	const threadRuntime = useThreadRuntime();
-
-	// ボタンクリックで政党名を送信
-	const handleGenerateSummary = () => {
-		setIsGenerating(true);
-		threadRuntime.append({
-			role: "user",
-			content: [{ type: "text", text: `政党名: ${party.name}` }],
-		});
-	};
-
-	return (
-		<>
-			<div className="space-y-8">
-				{/* ヘッダー */}
-				<div className="flex justify-between items-start">
-					<div>
-						<h2 className="text-3xl font-bold">{party.name}</h2>
-						<p className="text-lg text-muted-foreground">
-							{party.name_en}
-						</p>
-					</div>
-					{summary && (
-						<Button
-							size="sm"
-							variant="outline"
-							onClick={handleGenerateSummary}
-							disabled={isGenerating}
-						>
-							<RefreshCw
-								className={`h-4 w-4 mr-2 ${isGenerating ? "animate-spin" : ""}`}
-							/>
-							更新
-						</Button>
-					)}
-				</div>
-
-				{/* コンテンツエリア */}
-				{(!summary || !summary.html_content) && !latestContent ? (
-					<div className="text-center py-16">
-						<p className="text-muted-foreground mb-4">
-							まだ情報が取得されていません
-						</p>
-						<Button
-							onClick={handleGenerateSummary}
-							size="lg"
-							disabled={isGenerating}
-						>
-							{isGenerating ? (
-								<>
-									<RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-									生成中...
-								</>
-							) : (
-								"要約情報を取得"
-							)}
-						</Button>
-					</div>
-				) : (
-					<div className="h-full">
-						{/* HTMLコンテンツを表示 */}
-						<iframe
-							srcDoc={latestContent || summary?.html_content}
-							className="w-full h-[calc(100vh-300px)] min-h-[600px] border-0 rounded-lg shadow-sm"
-							sandbox="allow-scripts allow-same-origin"
-							title="政党情報サマリー"
-						/>
-
-						{/* メタデータ */}
-						<div className="text-xs text-muted-foreground text-right mt-2">
-							最終更新:{" "}
-							{summary?.updated_at
-								? new Date(summary.updated_at).toLocaleString()
-								: "N/A"}
-						</div>
-					</div>
-				)}
-
-				{/* 生成中の進捗表示 */}
-				{isGenerating && (
-					<div className="border rounded-lg p-4 bg-muted/10">
-						<div className="flex items-center gap-2">
-							<RefreshCw className="h-4 w-4 animate-spin" />
-							<span className="text-sm text-muted-foreground">
-								政党情報を生成中...
-							</span>
-						</div>
-					</div>
-				)}
-
-				{/* Artifacts Tool UI - HTMLコンテンツを自動保存 */}
-				<ArtifactsToolUI />
-			</div>
-			
-			{/* ArtifactsViewを追加 - ツールから生成されたHTMLを表示 */}
-			<ArtifactsView onContentUpdate={(content) => {
-				setLatestContent(content);
-				// 保存処理
-				savePartySummary(party.id, content).then((saved) => {
-					if (saved && onSummaryUpdate) {
-						onSummaryUpdate(saved);
-					}
-				}).catch((error) => {
-					console.error("Failed to save party summary:", error);
-				});
-			}} />
-		</>
-	);
-}
-
 export function PartySummary({
 	party,
 	summary,
 	onSummaryUpdate,
 }: PartySummaryProps) {
-	const [latestContent, setLatestContent] = useState<string>("");
 	const [isGenerating, setIsGenerating] = useState(false);
 
-	// MastraのAPIエンドポイントに直接接続するRuntime
-	const runtime = useChatRuntime({
-		api: `${process.env.NEXT_PUBLIC_MASTRA_API_URL || "http://localhost:4111"}/api/agents/partyResearchAgent/stream`,
-	});
+	const [generatedHtml, setGeneratedHtml] = useState<string>("");
+	const [error, setError] = useState<string | null>(null);
+	const [showIframe, setShowIframe] = useState(false);
+
+	const handleGenerateSummary = async () => {
+		console.log("🚀 要約生成開始");
+		console.log("📊 政党名:", party.name);
+		console.log("🆔 政党ID:", party.id);
+		
+		setIsGenerating(true);
+		setError(null);
+		setGeneratedHtml("");
+		setShowIframe(true);
+		
+		// 生成中のHTMLを設定
+		const loadingHtml = `
+			<div style="display: flex; align-items: center; justify-content: center; height: 100vh; font-family: system-ui, -apple-system, sans-serif;">
+				<div style="text-align: center;">
+					<div style="margin-bottom: 20px;">
+						<svg style="animation: spin 1s linear infinite; width: 48px; height: 48px; color: #6366f1;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+						</svg>
+					</div>
+					<h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 8px; color: #1f2937;">政党情報を生成中...</h2>
+					<p style="color: #6b7280;">${party.name}の詳細情報をAIが分析しています</p>
+				</div>
+				<style>
+					@keyframes spin {
+						from { transform: rotate(0deg); }
+						to { transform: rotate(360deg); }
+					}
+				</style>
+			</div>
+		`;
+		setGeneratedHtml(loadingHtml);
+		
+		try {
+			const agent = getPartyResearchAgent();
+			const response = await agent.stream({
+				messages: [{
+					role: "user",
+					content: party.name
+				}]
+			});
+
+			// ストリーミングレスポンスを処理
+			let fullHtml = "";
+			await response.processDataStream({
+				onTextPart: (text) => {
+					// 最初のテキストを受け取ったらローディングHTMLをクリア
+					if (fullHtml === "") {
+						setGeneratedHtml("");
+					}
+					fullHtml += text;
+					setGeneratedHtml(fullHtml);
+				},
+				onErrorPart: (error) => {
+					console.error("❌ エラー:", error);
+					setError("要約の生成中にエラーが発生しました");
+				}
+			});
+
+			console.log("✅ 要約生成完了");
+			
+			// 生成されたHTMLを親コンポーネントに通知
+			if (onSummaryUpdate && fullHtml) {
+				onSummaryUpdate({
+					party_id: party.id,
+					html_content: fullHtml,
+					summary_data: {} as any, // AIからHTMLのみが返されるため、空のデータを設定
+					updated_at: new Date().toISOString()
+				});
+			}
+		} catch (error) {
+			console.error("❌ 要約生成エラー:", error);
+			setError("要約の生成に失敗しました");
+		} finally {
+			setIsGenerating(false);
+		}
+	};
 
 	return (
-		<AssistantRuntimeProvider runtime={runtime}>
-			<PartySummaryContent
-				party={party}
-				summary={summary}
-				onSummaryUpdate={onSummaryUpdate}
-				latestContent={latestContent}
-				setLatestContent={setLatestContent}
-				isGenerating={isGenerating}
-				setIsGenerating={setIsGenerating}
-			/>
-		</AssistantRuntimeProvider>
+		<div className="space-y-8 h-full flex flex-col">
+			{/* ヘッダー */}
+			<div className="flex justify-between items-start">
+				<div>
+					<h2 className="text-3xl font-bold">{party.name}</h2>
+					<p className="text-lg text-muted-foreground">
+						{party.name_en}
+					</p>
+				</div>
+				{summary && (
+					<Button
+						size="sm"
+						variant="outline"
+						onClick={handleGenerateSummary}
+						disabled={isGenerating}
+					>
+						<RefreshCw
+							className={`h-4 w-4 mr-2 ${isGenerating ? "animate-spin" : ""}`}
+						/>
+						更新
+					</Button>
+				)}
+			</div>
+
+			{/* エラー表示 */}
+			{error && (
+				<div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+					{error}
+				</div>
+			)}
+
+			{/* コンテンツエリア */}
+			{(!summary || !summary.html_content) && !showIframe ? (
+				<div className="text-center py-16">
+					<p className="text-muted-foreground mb-4">
+						まだ情報が取得されていません
+					</p>
+					<Button
+						onClick={handleGenerateSummary}
+						size="lg"
+						disabled={isGenerating}
+					>
+						{isGenerating ? (
+							<>
+								<RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+								生成中...
+							</>
+						) : (
+							"要約情報を取得"
+						)}
+					</Button>
+				</div>
+			) : (
+				<div className="flex-1">
+					{/* HTMLコンテンツを表示 */}
+					<iframe
+						srcDoc={generatedHtml || summary?.html_content || ""}
+						className="w-full min-h-[800px] border-0"
+						sandbox="allow-scripts allow-same-origin"
+						title="政党情報サマリー"
+						style={{ height: 'auto' }}
+						onLoad={(e) => {
+							const iframe = e.target as HTMLIFrameElement;
+							const resizeIframe = () => {
+								try {
+									const contentHeight = iframe.contentWindow?.document.body.scrollHeight;
+									if (contentHeight) {
+										iframe.style.height = contentHeight + 'px';
+									}
+								} catch (e) {
+									// Cross-origin制限により高さを取得できない場合は最小高さを維持
+								}
+							};
+							// 初期サイズ設定
+							resizeIframe();
+							// コンテンツの変更を監視
+							const observer = new MutationObserver(resizeIframe);
+							if (iframe.contentWindow?.document.body) {
+								observer.observe(iframe.contentWindow.document.body, {
+									childList: true,
+									subtree: true,
+									attributes: true
+								});
+							}
+						}}
+					/>
+
+					{/* メタデータ */}
+					<div className="text-xs text-muted-foreground text-right mt-2">
+						最終更新:{" "}
+						{summary?.updated_at
+							? new Date(summary.updated_at).toLocaleString()
+							: generatedHtml ? new Date().toLocaleString() : "N/A"}
+					</div>
+				</div>
+			)}
+
+			{/* 生成中のスケルトンローディング（削除） */}
+			{false && (
+				<div className="space-y-4">
+					<div className="border rounded-lg p-4 bg-muted/10">
+						<div className="flex items-center gap-2 mb-4">
+							<RefreshCw className="h-4 w-4 animate-spin" />
+							<span className="text-sm text-muted-foreground">
+								政党情報を生成中...
+							</span>
+						</div>
+						
+						{/* スケルトンローディング */}
+						<div className="space-y-3">
+							<div className="h-4 bg-muted/20 rounded animate-pulse" />
+							<div className="h-4 bg-muted/20 rounded animate-pulse w-5/6" />
+							<div className="h-4 bg-muted/20 rounded animate-pulse w-4/6" />
+							<div className="h-32 bg-muted/20 rounded animate-pulse mt-4" />
+						</div>
+					</div>
+				</div>
+			)}
+		</div>
 	);
 }

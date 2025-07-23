@@ -1,8 +1,10 @@
 export interface StreamMessage {
-  type: 'text-delta' | 'text-done' | 'error';
+  type: 'text-delta' | 'text-done' | 'error' | 'tool-call';
   textDelta?: string;
   text?: string;
   error?: string;
+  toolName?: string;
+  args?: any;
 }
 
 export interface MastraMessage {
@@ -27,10 +29,18 @@ export function parseSSEData(data: string): StreamMessage | null {
     
     const parsed = JSON.parse(data);
     
-    if (parsed.type === 'text-delta' && parsed.textDelta) {
+    if (parsed.type === 'textDelta' && parsed.textDelta) {
       return {
         type: 'text-delta',
         textDelta: parsed.textDelta
+      };
+    }
+    
+    if (parsed.type === 'toolCall' && parsed.toolName) {
+      return {
+        type: 'tool-call',
+        toolName: parsed.toolName,
+        args: parsed.args
       };
     }
     

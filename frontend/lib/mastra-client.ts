@@ -1,2 +1,12 @@
-// AI SDK実装に移行したため、このファイルは削除予定
-// 新しい実装は /app/api/research-party-ai/route.ts を参照
+import { MastraClient } from "@mastra/client-js";
+
+// Mastraクライアントの初期化
+export const mastraClient = new MastraClient({
+  // バックエンドのMastraサーバーURL
+  baseUrl: process.env.NEXT_PUBLIC_MASTRA_API_URL || "http://localhost:4111"
+});
+
+// Party Research Agentを取得
+export const getPartyResearchAgent = () => {
+  return mastraClient.getAgent("partyResearchAgent");
+};

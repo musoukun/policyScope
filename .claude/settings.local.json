@@ -17,7 +17,8 @@
       "Bash(npm init:*)",
       "Bash(cp:*)",
       "Bash(git init:*)",
-      "Bash(touch:*)"
+      "Bash(touch:*)",
+      "Bash(dir:*)"
     ],
     "deny": []
   }
