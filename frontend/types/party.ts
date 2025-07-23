@@ -12,12 +12,14 @@ export interface PartySummary {
   id?: string;
   party_id: string;
   summary_data: PartyComprehensiveData;
+  html_content?: string;
   created_at?: string;
   updated_at?: string;
 }
 
 export interface PartyComprehensiveData {
   comprehensivePartyReport: {
+    markdown?: string;
     breakingSection: {
       latestElectionResult: {
         electionName: string;

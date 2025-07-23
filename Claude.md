@@ -15,7 +15,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - 実装する前に実装する内容が最新のものか、APIの使い方が正しいかを必ずuse Context7で検索する。
 - mastraは標準でAPIサーバーになるためよほど特殊なカスタムAPI以外は実装不要です。
-
+- npm run devコマンドは入力しない。常にユーザが起動する事。
+- 
 # PolicyScope コードベース概要
 
 PolicyScopeは政党政策分析Wikiアプリケーションで、Next.jsベースのフルスタックアプリケーションです。

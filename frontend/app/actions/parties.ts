@@ -52,41 +52,55 @@ export async function getPartySummary(partyId: string): Promise<PartySummary | n
 
 export async function savePartySummary(
   partyId: string,
-  summaryData: PartySummary["summary_data"]
+  htmlContent: string
 ): Promise<PartySummary | null> {
   try {
-    console.log("Attempting to save party summary:", {
-      party_id: partyId,
-      data_keys: Object.keys(summaryData),
-    });
+    console.log("Attempting to save party HTML content");
 
-    const { data, error } = await supabase
+    // 既存のレコードがあるか確認
+    const { data: existing } = await supabase
       .from("party_summaries")
-      .insert({
-        party_id: partyId,
-        summary_data: summaryData,
-      })
-      .select()
+      .select("id")
+      .eq("party_id", partyId)
       .single();
 
-    if (error) {
-      console.error("Supabase error saving party summary:", {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-      });
+    let result;
+    if (existing) {
+      // 更新
+      const { data, error } = await supabase
+        .from("party_summaries")
+        .update({
+          html_content: htmlContent,
+          summary_data: {}, // 空のオブジェクトで更新
+          updated_at: new Date().toISOString(),
+        })
+        .eq("party_id", partyId)
+        .select()
+        .single();
       
-      // RLSエラーの場合の特別な処理
-      if (error.code === '42501') {
-        console.error("RLS Policy Error: Authentication required or insufficient permissions");
-      }
+      result = { data, error };
+    } else {
+      // 新規作成
+      const { data, error } = await supabase
+        .from("party_summaries")
+        .insert({
+          party_id: partyId,
+          html_content: htmlContent,
+          summary_data: {}, // 空のオブジェクト
+        })
+        .select()
+        .single();
       
+      result = { data, error };
+    }
+
+    if (result.error) {
+      console.error("Supabase error saving party summary:", result.error);
       return null;
     }
 
-    console.log("Party summary saved successfully:", data?.id);
-    return data;
+    console.log("Party HTML saved successfully");
+    return result.data;
   } catch (err) {
     console.error("Unexpected error in savePartySummary:", err);
     return null;

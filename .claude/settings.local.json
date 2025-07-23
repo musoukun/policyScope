@@ -16,7 +16,8 @@
       "Bash(grep:*)",
       "Bash(npm init:*)",
       "Bash(cp:*)",
-      "Bash(git init:*)"
+      "Bash(git init:*)",
+      "Bash(touch:*)"
     ],
     "deny": []
   }
