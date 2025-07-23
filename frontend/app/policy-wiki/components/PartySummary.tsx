@@ -3,8 +3,9 @@
 import type { Party, PartySummary as PartySummaryType } from "@/types/party";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getPartyResearchAgent } from "@/lib/mastra-client";
+import { getPartySummary, savePartySummary } from "@/app/actions/party-summaries";
 
 interface PartySummaryProps {
 	party: Party;
@@ -18,10 +19,37 @@ export function PartySummary({
 	onSummaryUpdate,
 }: PartySummaryProps) {
 	const [isGenerating, setIsGenerating] = useState(false);
-
 	const [generatedHtml, setGeneratedHtml] = useState<string>("");
 	const [error, setError] = useState<string | null>(null);
 	const [showIframe, setShowIframe] = useState(false);
+	const [loading, setLoading] = useState(true);
+	const [savedSummary, setSavedSummary] = useState<PartySummaryType | null>(null);
+
+	// Supabaseから政党要約を取得
+	useEffect(() => {
+		const fetchSummary = async () => {
+			// 政党が変更されたら、前のデータをクリア
+			setGeneratedHtml("");
+			setShowIframe(false);
+			setSavedSummary(null);
+			setError(null);
+			
+			setLoading(true);
+			try {
+				const data = await getPartySummary(party.id);
+				if (data) {
+					setSavedSummary(data);
+					setGeneratedHtml(data.html_content || "");
+					setShowIframe(!!data.html_content);
+				}
+			} catch (error) {
+				console.error("要約取得エラー:", error);
+			} finally {
+				setLoading(false);
+			}
+		};
+		fetchSummary();
+	}, [party.id]);
 
 	const handleGenerateSummary = async () => {
 		console.log("🚀 要約生成開始");
@@ -83,14 +111,21 @@ export function PartySummary({
 
 			console.log("✅ 要約生成完了");
 			
-			// 生成されたHTMLを親コンポーネントに通知
-			if (onSummaryUpdate && fullHtml) {
-				onSummaryUpdate({
-					party_id: party.id,
-					html_content: fullHtml,
-					summary_data: {} as any, // AIからHTMLのみが返されるため、空のデータを設定
-					updated_at: new Date().toISOString()
-				});
+			// Supabaseに保存
+			if (fullHtml) {
+				try {
+					const saved = await savePartySummary(party.id, fullHtml);
+					setSavedSummary(saved);
+					console.log("💾 要約をSupabaseに保存しました");
+					
+					// 親コンポーネントに通知
+					if (onSummaryUpdate) {
+						onSummaryUpdate(saved);
+					}
+				} catch (error) {
+					console.error("要約保存エラー:", error);
+					setError("要約の保存に失敗しました");
+				}
 			}
 		} catch (error) {
 			console.error("❌ 要約生成エラー:", error);
@@ -103,26 +138,28 @@ export function PartySummary({
 	return (
 		<div className="space-y-8 h-full flex flex-col">
 			{/* ヘッダー */}
-			<div className="flex justify-between items-start">
-				<div>
-					<h2 className="text-3xl font-bold">{party.name}</h2>
+			<div className="flex items-start gap-4">
+				<div className="flex-1">
+					<div className="flex items-center gap-3">
+						<h2 className="text-3xl font-bold">{party.name}</h2>
+						{(showIframe || savedSummary) && (
+							<Button
+								size="sm"
+								variant="ghost"
+								onClick={handleGenerateSummary}
+								disabled={isGenerating}
+								title="Wikiを再生成"
+							>
+								<RefreshCw
+									className={`h-5 w-5 ${isGenerating ? "animate-spin" : ""}`}
+								/>
+							</Button>
+						)}
+					</div>
 					<p className="text-lg text-muted-foreground">
 						{party.name_en}
 					</p>
 				</div>
-				{summary && (
-					<Button
-						size="sm"
-						variant="outline"
-						onClick={handleGenerateSummary}
-						disabled={isGenerating}
-					>
-						<RefreshCw
-							className={`h-4 w-4 mr-2 ${isGenerating ? "animate-spin" : ""}`}
-						/>
-						更新
-					</Button>
-				)}
 			</div>
 
 			{/* エラー表示 */}
@@ -132,8 +169,13 @@ export function PartySummary({
 				</div>
 			)}
 
-			{/* コンテンツエリア */}
-			{(!summary || !summary.html_content) && !showIframe ? (
+			{/* ローディング中 */}
+			{loading ? (
+				<div className="flex items-center justify-center py-16">
+					<RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+				</div>
+			) : /* コンテンツエリア */
+			(!savedSummary && !showIframe) ? (
 				<div className="text-center py-16">
 					<p className="text-muted-foreground mb-4">
 						まだ情報が取得されていません
@@ -157,7 +199,7 @@ export function PartySummary({
 				<div className="flex-1">
 					{/* HTMLコンテンツを表示 */}
 					<iframe
-						srcDoc={generatedHtml || summary?.html_content || ""}
+						srcDoc={generatedHtml || savedSummary?.html_content || ""}
 						className="w-full min-h-[800px] border-0"
 						sandbox="allow-scripts allow-same-origin"
 						title="政党情報サマリー"
@@ -191,8 +233,8 @@ export function PartySummary({
 					{/* メタデータ */}
 					<div className="text-xs text-muted-foreground text-right mt-2">
 						最終更新:{" "}
-						{summary?.updated_at
-							? new Date(summary.updated_at).toLocaleString()
+						{savedSummary?.updated_at
+							? new Date(savedSummary.updated_at).toLocaleString()
 							: generatedHtml ? new Date().toLocaleString() : "N/A"}
 					</div>
 				</div>

@@ -107,7 +107,7 @@ export const partyResearchAgent: Agent = new Agent({
     - ネガティブ/リスクのある政策は薄い赤背景（#ffe6e6）
     - 支持率のグラフやチャート
     - 重要な数値指標のカード表示
-    - プロフェッショナルでモダンなデザイン
+    - モダンなデザイン
   - スライド風レイアウトにまとめる
   - CSSは<style>タグ内に記述
   - JavaScriptは最小限に留める`,
