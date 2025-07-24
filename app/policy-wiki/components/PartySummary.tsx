@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import type { Party, PartySummary as PartySummaryType } from "@/types/party";
@@ -97,23 +98,23 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 	useEffect(() => {
 		let isActive = true;
 		let currentIndex = 0;
-		
+
 		const typeText = async () => {
 			setDisplayedText("");
 			currentIndex = 0;
-			
+
 			// 少し遅延してから開始
-			await new Promise(resolve => setTimeout(resolve, 300));
-			
+			await new Promise((resolve) => setTimeout(resolve, 300));
+
 			while (isActive && currentIndex < party.name.length) {
 				setDisplayedText(party.name.slice(0, currentIndex + 1));
 				currentIndex++;
-				await new Promise(resolve => setTimeout(resolve, 150)); // 遅めのタイピング速度
+				await new Promise((resolve) => setTimeout(resolve, 150)); // 遅めのタイピング速度
 			}
 		};
-		
+
 		typeText();
-		
+
 		return () => {
 			isActive = false;
 		};
@@ -172,7 +173,7 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 			"しばらく画面遷移せずにお待ちください",
 			"リアルタイムで文字が追加されます。",
 		];
-		
+
 		const loadingHtml = `
 			<div style="display: flex; align-items: center; justify-content: center; height: 100vh; font-family: system-ui, -apple-system, sans-serif;">
 				<div style="text-align: center;">
@@ -346,7 +347,10 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 									)}
 								>
 									<RefreshCw
-										className={cn("h-4 w-4", isGenerating && "animate-spin")}
+										className={cn(
+											"h-4 w-4",
+											isGenerating && "animate-spin"
+										)}
 									/>
 								</button>
 								<span className="text-xs text-muted-foreground">
