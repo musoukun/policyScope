@@ -8,6 +8,20 @@ export interface Party {
   updated_at?: string;
 }
 
+export interface PartyNewsItem {
+  タイトル: string;
+  概要: string;
+  URL: string;
+}
+
+export interface PartyNews {
+  id?: string;
+  party_id: string;
+  news_data: PartyNewsItem[];
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface PartySummary {
   id?: string;
   party_id: string;

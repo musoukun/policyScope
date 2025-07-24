@@ -101,7 +101,12 @@ export function PartySummary({
 						setGeneratedHtml("");
 					}
 					fullHtml += text;
-					setGeneratedHtml(fullHtml);
+					// プレースホルダー画像URLを置き換え
+					const processedHtml = fullHtml.replace(
+						/https:\/\/via\.placeholder\.com\/[^"'\s]*/g,
+						'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZTVlN2ViIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzZiNzI4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+Q2hhcnQgUGxhY2Vob2xkZXI8L3RleHQ+PC9zdmc+'
+					);
+					setGeneratedHtml(processedHtml);
 				},
 				onErrorPart: (error) => {
 					console.error("❌ エラー:", error);
@@ -201,33 +206,9 @@ export function PartySummary({
 					<iframe
 						srcDoc={generatedHtml || savedSummary?.html_content || ""}
 						className="w-full min-h-[800px] border-0"
-						sandbox="allow-scripts allow-same-origin"
+						sandbox="allow-scripts"
 						title="政党情報サマリー"
-						style={{ height: 'auto' }}
-						onLoad={(e) => {
-							const iframe = e.target as HTMLIFrameElement;
-							const resizeIframe = () => {
-								try {
-									const contentHeight = iframe.contentWindow?.document.body.scrollHeight;
-									if (contentHeight) {
-										iframe.style.height = contentHeight + 'px';
-									}
-								} catch (e) {
-									// Cross-origin制限により高さを取得できない場合は最小高さを維持
-								}
-							};
-							// 初期サイズ設定
-							resizeIframe();
-							// コンテンツの変更を監視
-							const observer = new MutationObserver(resizeIframe);
-							if (iframe.contentWindow?.document.body) {
-								observer.observe(iframe.contentWindow.document.body, {
-									childList: true,
-									subtree: true,
-									attributes: true
-								});
-							}
-						}}
+						style={{ height: '1200px' }}
 					/>
 
 					{/* メタデータ */}
