@@ -1,11 +1,12 @@
 "use client";
 
 import type { Party, PartySummary as PartySummaryType } from "@/types/party";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { RefreshCw } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { getPartyResearchAgent } from "@/lib/mastra-client";
 import { getPartySummary, savePartySummary } from "@/lib/api/parties";
+import { motion, useAnimate } from "framer-motion";
 
 interface PartySummaryProps {
 	party: Party;
@@ -22,6 +23,8 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 		null
 	);
 	const iframeRef = useRef<HTMLIFrameElement>(null);
+	const [scope, animate] = useAnimate();
+	const [displayedText, setDisplayedText] = useState("");
 
 	// HTMLコンテンツから高さを推定する関数
 	const estimateContentHeight = (htmlContent: string): number => {
@@ -70,7 +73,7 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 		}
 
 		// 余裕を持たせた上で、最小高さを保証
-		return Math.max(estimatedHeight * 1.2, 800);
+		return Math.max(estimatedHeight * 1.2 - 1, 800);
 	};
 
 	// iframeの高さを動的に調整する関数
@@ -89,6 +92,32 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 			iframe.style.height = "800px";
 		}
 	}, [generatedHtml, savedSummary]);
+
+	// タイプライターアニメーション
+	useEffect(() => {
+		let isActive = true;
+		let currentIndex = 0;
+		
+		const typeText = async () => {
+			setDisplayedText("");
+			currentIndex = 0;
+			
+			// 少し遅延してから開始
+			await new Promise(resolve => setTimeout(resolve, 300));
+			
+			while (isActive && currentIndex < party.name.length) {
+				setDisplayedText(party.name.slice(0, currentIndex + 1));
+				currentIndex++;
+				await new Promise(resolve => setTimeout(resolve, 150)); // 遅めのタイピング速度
+			}
+		};
+		
+		typeText();
+		
+		return () => {
+			isActive = false;
+		};
+	}, [party.name]);
 
 	// Supabaseから政党要約を取得
 	useEffect(() => {
@@ -138,6 +167,12 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 		setShowIframe(true);
 
 		// 生成中のHTMLを設定
+		const messages = [
+			"要約情報を生成中です。",
+			"しばらく画面遷移せずにお待ちください",
+			"リアルタイムで文字が追加されます。",
+		];
+		
 		const loadingHtml = `
 			<div style="display: flex; align-items: center; justify-content: center; height: 100vh; font-family: system-ui, -apple-system, sans-serif;">
 				<div style="text-align: center;">
@@ -146,15 +181,60 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
 						</svg>
 					</div>
-					<h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 8px; color: #1f2937;">政党情報を生成中...</h2>
-					<p style="color: #6b7280;">${party.name}の詳細情報をAIが分析しています</p>
+					<h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 16px; color: #1f2937;">${party.name}</h2>
+					<div id="message-container" style="height: 60px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center;">
+						<p id="message-text" style="color: #6b7280; margin: 0; position: absolute; width: 100%; line-height: 1.5; padding: 0 20px; text-align: center; transition: all 0.3s ease-out;">要約情報を生成中です。</p>
+					</div>
 				</div>
 				<style>
 					@keyframes spin {
 						from { transform: rotate(0deg); }
 						to { transform: rotate(360deg); }
 					}
+					@keyframes slideUp {
+						from { 
+							transform: translateY(0);
+							opacity: 1;
+						}
+						to { 
+							transform: translateY(-60px);
+							opacity: 0;
+						}
+					}
+					@keyframes slideIn {
+						from { 
+							transform: translateY(60px);
+							opacity: 0;
+						}
+						to { 
+							transform: translateY(0);
+							opacity: 1;
+						}
+					}
 				</style>
+				<script>
+					(function() {
+						const messages = ${JSON.stringify(messages)};
+						let currentIndex = 0;
+						const messageText = document.getElementById('message-text');
+						
+						function updateMessage() {
+							// 現在のメッセージをスライドアップ
+							messageText.style.animation = 'slideUp 0.3s ease-out forwards';
+							
+							setTimeout(() => {
+								// 次のメッセージに更新
+								currentIndex = (currentIndex + 1) % messages.length;
+								messageText.textContent = messages[currentIndex];
+								// 新しいメッセージをスライドイン
+								messageText.style.animation = 'slideIn 0.3s ease-out forwards';
+							}, 300);
+						}
+						
+						// 2秒ごとにメッセージを更新
+						setInterval(updateMessage, 2000);
+					})();
+				</script>
 			</div>
 		`;
 		setGeneratedHtml(loadingHtml);
@@ -168,6 +248,7 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 						content: party.name,
 					},
 				],
+				temperature: 0.4, // 低めのtemperatureで一貫性のある出力を生成
 			});
 
 			// ストリーミングレスポンスを処理
@@ -223,20 +304,55 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 			{/* ヘッダー */}
 			<div className="flex items-start gap-4">
 				<div className="flex-1">
-					<div className="flex items-center gap-3">
-						<h2 className="text-3xl font-bold">{party.name}</h2>
-						{(showIframe || savedSummary) && (
-							<Button
-								size="sm"
-								variant="ghost"
-								onClick={handleGenerateSummary}
-								disabled={isGenerating}
-								title="Wikiを再生成"
-							>
-								<RefreshCw
-									className={`h-5 w-5 ${isGenerating ? "animate-spin" : ""}`}
+					<div className="flex items-center gap-3" ref={scope}>
+						<h2 className="text-3xl font-bold relative">
+							<span className="inline-block">
+								{displayedText}
+								<motion.span
+									className="inline-block w-0.5 h-8 bg-current ml-0.5 align-middle"
+									animate={{ opacity: [1, 0] }}
+									transition={{
+										duration: 0.8,
+										repeat: Infinity,
+										repeatType: "reverse",
+									}}
 								/>
-							</Button>
+							</span>
+						</h2>
+						{(showIframe || savedSummary) && (
+							<div className="flex items-center gap-2">
+								<button
+									onClick={handleGenerateSummary}
+									disabled={isGenerating}
+									title="Wikiを再生成"
+									className={cn(
+										"relative inline-flex items-center justify-center",
+										"h-8 w-8 text-sm font-medium rounded-md",
+										"transition-all duration-300",
+										"bg-zinc-100 dark:bg-zinc-800",
+										"text-zinc-900 dark:text-white",
+										"border-2 border-zinc-900 dark:border-white",
+										"hover:bg-zinc-900 hover:text-white",
+										"dark:hover:bg-white dark:hover:text-zinc-900",
+										"shadow-[2px_2px_0_0_rgba(0,0,0,1)]",
+										"dark:shadow-[2px_2px_0_0_rgba(255,255,255,1)]",
+										"hover:translate-x-[2px] hover:translate-y-[2px]",
+										"hover:shadow-none",
+										"active:translate-x-[1px] active:translate-y-[1px]",
+										"disabled:opacity-50 disabled:cursor-not-allowed",
+										"disabled:hover:shadow-[2px_2px_0_0_rgba(0,0,0,1)]",
+										"disabled:dark:hover:shadow-[2px_2px_0_0_rgba(255,255,255,1)]",
+										"disabled:hover:translate-x-0 disabled:hover:translate-y-0"
+									)}
+								>
+									<RefreshCw
+										className={cn("h-4 w-4", isGenerating && "animate-spin")}
+									/>
+								</button>
+								<span className="text-xs text-muted-foreground">
+									Wikiを再生成します。Wikiが出来上がる様子をリアルタイムで確認できます。
+								</span>
+							</div>
 						)}
 					</div>
 					<p className="text-lg text-muted-foreground">
@@ -263,20 +379,38 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 					<p className="text-muted-foreground mb-4">
 						まだ情報が取得されていません
 					</p>
-					<Button
+					<button
 						onClick={handleGenerateSummary}
-						size="lg"
 						disabled={isGenerating}
+						className={cn(
+							"relative inline-flex items-center justify-center gap-2",
+							"h-11 px-6 text-base font-medium rounded-lg",
+							"transition-all duration-300",
+							"bg-zinc-100 dark:bg-zinc-800",
+							"text-zinc-900 dark:text-white",
+							"border-2 border-zinc-900 dark:border-white",
+							"hover:bg-zinc-900 hover:text-white",
+							"dark:hover:bg-white dark:hover:text-zinc-900",
+							"shadow-[3px_3px_0_0_rgba(0,0,0,1)]",
+							"dark:shadow-[3px_3px_0_0_rgba(255,255,255,1)]",
+							"hover:translate-x-[3px] hover:translate-y-[3px]",
+							"hover:shadow-none",
+							"active:translate-x-[2px] active:translate-y-[2px]",
+							"disabled:opacity-50 disabled:cursor-not-allowed",
+							"disabled:hover:shadow-[3px_3px_0_0_rgba(0,0,0,1)]",
+							"disabled:dark:hover:shadow-[3px_3px_0_0_rgba(255,255,255,1)]",
+							"disabled:hover:translate-x-0 disabled:hover:translate-y-0"
+						)}
 					>
 						{isGenerating ? (
 							<>
-								<RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+								<RefreshCw className="h-4 w-4 animate-spin" />
 								生成中...
 							</>
 						) : (
 							"要約情報を取得"
 						)}
-					</Button>
+					</button>
 				</div>
 			) : (
 				<div className="flex-1">
@@ -289,7 +423,10 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 						className="w-full border-0"
 						sandbox="allow-scripts"
 						title="政党情報サマリー"
-						style={{ minHeight: "800px" }}
+						style={{ minHeight: "800px", margin: 0, padding: 0 }}
+						marginWidth={0}
+						marginHeight={0}
+						frameBorder="0"
 						onLoad={() => {
 							// iframeが読み込まれたら高さを再計算
 							// コンテンツ内の画像などが遅れて読み込まれる場合に備えて、少し待ってから再調整

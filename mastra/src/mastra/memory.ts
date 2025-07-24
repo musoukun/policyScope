@@ -1,9 +1,9 @@
+/* eslint-disable prefer-const */
 import { Memory } from "@mastra/memory";
 import { PostgresStore, PgVector } from "@mastra/pg";
 
 // Supabaseの接続情報を環境変数から取得
 const connectionString = process.env.DATABASE_URL;
-const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 // サービスロールキーが設定されている場合の処理
@@ -13,11 +13,13 @@ if (supabaseServiceKey) {
 	// サービスロールキーが設定されている場合はそのまま使用
 	// PostgresStoreとPgVectorはPostgreSQLのロールベースの権限を使用
 	console.log("📌 Mastra Memory: サービスロールキーが検出されました");
-	console.log("   DATABASE_URLの接続を使用します（postgresロールでRLSをバイパス）");
+	console.log(
+		"   DATABASE_URLの接続を使用します（postgresロールでRLSをバイパス）"
+	);
 } else {
 	console.warn(
 		"⚠️ Mastra Memory: SUPABASE_SERVICE_ROLE_KEY が設定されていません。\n" +
-		"RLSポリシーによってMastraテーブルへのアクセスが制限される可能性があります。"
+			"RLSポリシーによってMastraテーブルへのアクセスが制限される可能性があります。"
 	);
 }
 
@@ -72,7 +74,7 @@ export async function initializeVectorIndex(
 	}
 }
 // Supabaseクライアントをエクスポート（必要に応じて使用）
-export { supabaseAdmin } from './supabase';
+export { supabaseAdmin } from "./supabase";
 
 export { memory }; // デフォルトエクスポートも追加
 export default memory;

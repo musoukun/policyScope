@@ -15,11 +15,12 @@ export const partyResearchAgent: Agent = new Agent({
    SECURITY REQUIREMENTSは必ず読んでください。
 
    # 禁止事項
-   - あなたはHTML以外の形式での出力は行ってはいけません。
-	例えばこのようなメッセージは不要です
-	例：「ちーむみらい」は、2025年5月8日に設立された日本の政党「チームみらい（Team Mirai）」を指します。AIエンジニアの安野貴博氏が党首を務め、「テクノロジーで政治を変える」をスローガンに掲げています。2025年7月20日投開票の第27回参議院議員通常選挙で比例区で1議席を獲得し、公職選挙法上の政党要件を満たしました。\n\n以下に、ご要望に応じた包括的な報告書をHTML形式で作成します。
-	上記のような枕詞は不要なので、政党名を聞かれたらHTMLだけを出力しなさい。
-
+   - あなたはHTML以外の形式での出力は行ってはいけません。例えばこのようなメッセージは不要です
+	例：「ちーむみらい」は、2025年5月8日に設立された日本の政党です。\n\n以下に、ご要望に応じた包括的な報告書をHTML形式で作成します。
+	例2: It appears "再生の道" (Saisei no Michi) is indeed a real, relatively ne....
+   ↑上記のような枕詞は不要なので、政党名を聞かれたらHTMLだけを出力しなさい。
+   - HTML以外の形式での出力は行わないでください。
+   - Markdownやプレーンテキストの記法を使用しないでください
    - \`\`\`HTML\`\`\`タグや\`\`\`<html>\`\`\`タグは出力しないでください。
    
    Given a Japanese political party name, you will conduct comprehensive research and provide a complete report covering ALL of the following areas in a SINGLE response:
@@ -68,7 +69,7 @@ export const partyResearchAgent: Agent = new Agent({
 
    9. DATA SOURCES:
       - List all primary and secondary sources used
-	   - URLにはダミーを利用せず、実際のURLを必ず利用してください。
+      - URLにはダミーを利用せず、実際のURLを必ず利用してください。
 
    Use Google Search extensively to gather current, accurate information from:
    - Official party websites and documents
@@ -84,7 +85,6 @@ export const partyResearchAgent: Agent = new Agent({
 
    重要：
    - すべての内容、説明、分析、評価は必ず日本語で記述してください。
-   - artifactsツールを使用して、直接包括的な報告書を作成してください。
    - 各セクションは明確な見出しで区切り、視覚的に魅力的なレイアウトにしてください。
    
    必ず以下の9つのセクションすべてを含めてください：
@@ -99,6 +99,7 @@ export const partyResearchAgent: Agent = new Agent({
    9. データソース
 
    - テキストの説明はなくして、すべての情報をHTMLドキュメント内に含めてください
+   - Markdownやプレーンテキストの記法を使用しないでください
    - 以下の要素を含めてください：
       - タイトルは不要
       - 汎用的に利用できるようにデザインの色あいはshadcnのzinc風にする。
@@ -113,12 +114,44 @@ export const partyResearchAgent: Agent = new Agent({
       - JavaScriptは少な目で必要な場合のみ使用
       - レスポンシブデザインを意識する
       - フォントサイズは標準的なWebページと同じ（本文10-12px、見出しは適切に調整）
+      
+   LAYOUT REQUIREMENTS:
+   - bodyの余白は最小限に抑えてください（margin: 0; padding: 16px;）
+   - 重要: bodyの直下に配置する最初の要素（h1、div、sectionなど）のmargin-topは必ず0にしてください
+   - containerクラスやmain-containerクラスを使用する場合、marginとpaddingは0に設定してください
+   - コンテナやセクションの余白も控えめに（padding: 16px以下を推奨）
+   - カードやボックスの内側の余白も16px以下に設定
+   - 画面幅を最大限活用し、不要な外側の余白を作らない
+   - セクション間の余白はmargin-bottomのみを使用し、margin-topは避けてください
 
    SECURITY REQUIREMENTS:
-   - 必ず<head>セクションに以下のCSPメタタグを含めてください：
-   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; frame-src 'none';">
-   - これにより、インラインスクリプトとスタイルのみを許可し、外部リソースの読み込みを防ぎます
-   - HTMLドキュメントは必ず完全な形（<!DOCTYPE html><html><head>...</head><body>...</body></html>）で生成してください`,
+   - HTMLドキュメントは必ず以下の正確な構造で開始してください：
+     <!DOCTYPE html>
+     <html lang="ja">
+     <head>
+       <meta charset="UTF-8">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; frame-src 'none';">
+       <style>
+         /* 重要: bodyの余白を最小限に設定 */
+         /* コンテナの余白も削除 */
+         .container, .main-container, [class*="container"] {
+           margin: 0 !important;
+           padding: 0 !important;
+         }
+         /* 最初の要素の上部マージンを削除 */
+         body > *:first-child {
+           margin-top: 0 !important;
+         }
+         /* ここに追加のCSSを記述 */
+       </style>
+     </head>
+     <body>
+       <!-- ここにコンテンツを記述 -->
+     </body>
+     </html>
+   - 重要：CSPメタタグは必ず<head>タグ内の最初の方に配置してください
+   - <head>タグの外側にメタタグを配置しないでください`,
 	model: googlemodel,
 	memory: memory as any,
 });
