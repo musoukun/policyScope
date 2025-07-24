@@ -7,15 +7,24 @@ import type { Party, PartySummary } from "@/types/party";
 export async function getAllParties(): Promise<Party[]> {
   const { data, error } = await supabase
     .from("parties")
-    .select("*")
-    .order("id");
+    .select("*");
 
   if (error) {
     console.error("Error fetching parties:", error);
     return PARTIES; // フォールバック
   }
 
-  return data || PARTIES;
+  // データベースから取得したデータを、PARTIES配列の順序に並び替え
+  if (data && data.length > 0) {
+    const partyOrder = PARTIES.map(p => p.id);
+    return data.sort((a, b) => {
+      const indexA = partyOrder.indexOf(a.id);
+      const indexB = partyOrder.indexOf(b.id);
+      return indexA - indexB;
+    });
+  }
+
+  return PARTIES;
 }
 
 export async function getPartyById(id: string): Promise<Party | null> {

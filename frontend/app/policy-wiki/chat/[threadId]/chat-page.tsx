@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { useAutoResizeTextarea } from "@/hooks/use-auto-resize-textarea";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { MarkdownRenderer } from "@/components/chat/markdown-renderer";
 
 interface ChatPageProps {
   threadId: string;
@@ -17,10 +18,14 @@ interface ChatPageProps {
 
 export function ChatPage({ threadId, initialQuery }: ChatPageProps) {
   const [isInitialized, setIsInitialized] = useState(false);
+  const [hasInitialQueryProcessed, setHasInitialQueryProcessed] = useState(false);
   
   const { messages, input, handleInputChange, handleSubmit, isLoading, append, setMessages } = useChat({
     body: {
       threadId,
+    },
+    onError: (error) => {
+      console.error("useChat error:", error);
     },
   });
 
@@ -34,21 +39,79 @@ export function ChatPage({ threadId, initialQuery }: ChatPageProps) {
   // 既存の会話履歴を取得
   useEffect(() => {
     const fetchMessages = async () => {
+      console.log("[ChatPage] 初期化開始", { threadId, initialQuery });
+      
+      // メッセージ履歴を取得
       try {
-        const response = await fetch(`/api/chat/${threadId}/messages`);
+        const url = `/api/chat/${threadId}`;
+        console.log("[ChatPage] メッセージ取得:", url);
+        
+        const response = await fetch(url);
+        console.log("[ChatPage] レスポンスステータス:", response.status);
+        
         const data = await response.json();
+        console.log("[ChatPage] 取得したデータ:", data);
+        console.log("[ChatPage] デバッグ情報:", data.debug);
+        console.log("[ChatPage] メッセージ数:", data.messages?.length || 0);
         
         if (data.messages && data.messages.length > 0) {
-          setMessages(data.messages);
-        } else if (initialQuery) {
+          // メッセージの正規化（contentがオブジェクトの場合はtextプロパティを使用）
+          const normalizedMessages = data.messages.map((msg: any) => ({
+            ...msg,
+            content: (() => {
+              const content = msg.content;
+              if (typeof content === 'string') return content;
+              if (Array.isArray(content) && content[0]?.text) return content[0].text;
+              if (content?.text) return content.text;
+              return JSON.stringify(content);
+            })()
+          }));
+          
+          // 既存の会話履歴がある場合は表示のみ
+          setMessages(normalizedMessages);
+          setHasInitialQueryProcessed(true); // 既存会話なので処理済みとする
+          
+          // URLパラメータをクリア
+          if (typeof window !== 'undefined' && window.location.search.includes('q=')) {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('q');
+            window.history.replaceState({}, '', url.pathname);
+          }
+        } else if (initialQuery && !hasInitialQueryProcessed) {
           // 新規会話で初期クエリがある場合のみ送信
-          await append({ role: "user", content: initialQuery });
+          console.log("初期クエリを送信:", initialQuery);
+          setHasInitialQueryProcessed(true);
+          
+          // appendを使用してメッセージを追加
+          append({ 
+            role: "user", 
+            content: initialQuery 
+          });
+          
+          // 送信後、URLパラメータをクリア
+          if (typeof window !== 'undefined') {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('q');
+            window.history.replaceState({}, '', url.pathname);
+          }
         }
       } catch (error) {
         console.error("Error fetching messages:", error);
-        if (initialQuery) {
+        if (initialQuery && !hasInitialQueryProcessed) {
           // エラー時でも初期クエリがあれば送信
-          await append({ role: "user", content: initialQuery });
+          console.log("エラー時の初期クエリ送信:", initialQuery);
+          setHasInitialQueryProcessed(true);
+          append({ 
+            role: "user", 
+            content: initialQuery 
+          });
+          
+          // URLパラメータをクリア
+          if (typeof window !== 'undefined') {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('q');
+            window.history.replaceState({}, '', url.pathname);
+          }
         }
       } finally {
         setIsInitialized(true);
@@ -56,17 +119,40 @@ export function ChatPage({ threadId, initialQuery }: ChatPageProps) {
     };
 
     fetchMessages();
-  }, [threadId]); // initialQuery, append, setMessagesは依存配列から除外
+  }, [threadId]); // 依存配列を最小限に
 
-  // メッセージが更新されたらスクロール
+  // initialQueryが変更されたときの処理は削除（上のuseEffectで処理済み）
+
+  // メッセージが更新されたらスクロール（ストリーミング中は常にスクロール）
   useEffect(() => {
     if (scrollAreaRef.current) {
       const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
       if (scrollContainer) {
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        // スムーズスクロールで最下部へ
+        scrollContainer.scrollTo({
+          top: scrollContainer.scrollHeight,
+          behavior: 'smooth'
+        });
       }
     }
   }, [messages]);
+
+  // ストリーミング中は短い間隔でスクロールを更新
+  useEffect(() => {
+    if (isLoading && scrollAreaRef.current) {
+      const interval = setInterval(() => {
+        const scrollContainer = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+        if (scrollContainer) {
+          scrollContainer.scrollTo({
+            top: scrollContainer.scrollHeight,
+            behavior: 'smooth'
+          });
+        }
+      }, 100); // 100msごとにスクロール位置を更新
+
+      return () => clearInterval(interval);
+    }
+  }, [isLoading]);
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,11 +204,6 @@ export function ChatPage({ threadId, initialQuery }: ChatPageProps) {
           {/* スケルトンローディング */}
           <ScrollArea className="flex-1 px-6 py-4">
             <div className="max-w-4xl space-y-8">
-              <div className="space-y-4">
-                <QuestionSkeleton />
-                <AnswerSkeleton />
-              </div>
-              <Separator className="my-6" />
               <div className="space-y-4">
                 <QuestionSkeleton />
                 <AnswerSkeleton />
@@ -183,6 +264,9 @@ export function ChatPage({ threadId, initialQuery }: ChatPageProps) {
       });
     }
   }
+  
+  console.log("現在のメッセージ:", messages);
+  console.log("メッセージペア:", messagePairs);
 
   return (
     <div className="flex h-screen bg-background">
@@ -204,7 +288,15 @@ export function ChatPage({ threadId, initialQuery }: ChatPageProps) {
                     <Search className="w-5 h-5 text-orange-600 mt-0.5" />
                     <div className="flex-1">
                       <div className="text-sm text-orange-600 font-medium mb-1">質問</div>
-                      <div className="text-gray-800">{pair.question.content}</div>
+                      <div className="text-gray-800">
+                        {(() => {
+                          const content = pair.question.content;
+                          if (typeof content === 'string') return content;
+                          if (Array.isArray(content) && content[0]?.text) return content[0].text;
+                          if (content?.text) return content.text;
+                          return JSON.stringify(content);
+                        })()}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -216,8 +308,16 @@ export function ChatPage({ threadId, initialQuery }: ChatPageProps) {
                       <FileText className="w-5 h-5 text-blue-600 mt-0.5" />
                       <div className="flex-1">
                         <div className="text-sm text-blue-600 font-medium mb-1">回答</div>
-                        <div className="text-gray-800 whitespace-pre-wrap">
-                          {pair.answer.content}
+                        <div className="text-gray-800">
+                          <MarkdownRenderer content={
+                            (() => {
+                              const content = pair.answer.content;
+                              if (typeof content === 'string') return content;
+                              if (Array.isArray(content) && content[0]?.text) return content[0].text;
+                              if (content?.text) return content.text;
+                              return JSON.stringify(content);
+                            })()
+                          } />
                         </div>
                         
                         {/* 参照元情報（将来的に実装） */}

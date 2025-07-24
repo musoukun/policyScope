@@ -1,7 +1,5 @@
 import { Agent } from "@mastra/core/agent";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { z } from "zod";
-import { artifactsTool } from "../tools/artifacts";
 import memory from "../memory";
 
 export const google = createGoogleGenerativeAI({

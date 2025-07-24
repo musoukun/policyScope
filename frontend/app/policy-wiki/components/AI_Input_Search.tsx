@@ -16,6 +16,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { useAutoResizeTextarea } from "@/hooks/use-auto-resize-textarea";
+import { useChatStore } from "@/lib/stores/chat-store";
+import { useRouter } from "next/navigation";
 
 export default function AI_Input_Search() {
 	const [value, setValue] = useState("");
@@ -25,15 +27,38 @@ export default function AI_Input_Search() {
 	});
 	const [showSearch, setShowSearch] = useState(true);
 	const [isFocused, setIsFocused] = useState(false);
+	const setChatInitData = useChatStore((state) => state.setChatInitData);
+	const router = useRouter();
 
-	const handleSubmit = () => {
+	const handleSubmit = async () => {
 		if (value.trim()) {
-			// 新規スレッドIDを生成（UUID形式）
-			const newThreadId = crypto.randomUUID();
-			// 新しいタブでチャットページを開き、質問をパラメータとして渡す
-			window.open(`/policy-wiki/chat/${newThreadId}?q=${encodeURIComponent(value)}`, '_blank');
-			setValue("");
-			adjustHeight(true);
+			try {
+				// まずMastraでスレッドを作成
+				const response = await fetch('/api/chat/thread/create', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ 
+						title: value.substring(0, 50) + "...",
+						initialQuery: value 
+					})
+				});
+				
+				const data = await response.json();
+				
+				if (data.success && data.threadId) {
+					console.log("[AI_Input_Search] スレッド作成成功:", data.threadId);
+					
+					// 新しいタブで開く（URLパラメータ付き）
+					window.open(`/policy-wiki/chat/${data.threadId}?q=${encodeURIComponent(value)}`, '_blank');
+					
+					setValue("");
+					adjustHeight(true);
+				} else {
+					console.error("[AI_Input_Search] スレッド作成失敗:", data);
+				}
+			} catch (error) {
+				console.error("[AI_Input_Search] エラー:", error);
+			}
 		}
 	};
 
