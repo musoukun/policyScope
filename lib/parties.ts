@@ -11,6 +11,8 @@ export const PARTY_COLORS: Record<string, string> = {
   reiwa: "#FF1493",      // れいわ - ショッキングピンク（猫の肉球色）
   sanseito: "#FF6600",   // 参政党 - オレンジ（橙色・だいだい色）
   team_mirai: "#90EE90", // チームみらい - パステルグリーン（くすみグリーン）
+  saisei: "#8B008B",     // 再生の道 - 紫（右でも左でもない中道を表現）
+  hoshuto: "#1E90FF",    // 日本保守党 - 青（保守系政党の伝統的な色）
 };
 
 export const PARTIES: Party[] = [
@@ -76,5 +78,19 @@ export const PARTIES: Party[] = [
     name_en: "Team Mirai",
     founded_year: 2025,
     description: "AIエンジニアの安野貴博氏が設立したテクノロジー政党。",
+  },
+  {
+    id: "saisei",
+    name: "再生の道",
+    name_en: "Saisei no Michi",
+    founded_year: 2025,
+    description: "石丸伸二元安芸高田市長が設立した地域政党。",
+  },
+  {
+    id: "hoshuto",
+    name: "日本保守党",
+    name_en: "Japan Conservative Party",
+    founded_year: 2023,
+    description: "百田尚樹・有本香が設立した保守政党。",
   },
 ];

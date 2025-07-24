@@ -1,9 +1,10 @@
+/* eslint-disable prefer-const */
 "use client";
 
 import type { Party, PartySummary as PartySummaryType } from "@/types/party";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { getPartyResearchAgent } from "@/lib/mastra-client";
 import { getPartySummary, savePartySummary } from "@/lib/api/parties";
 
@@ -21,6 +22,74 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 	const [savedSummary, setSavedSummary] = useState<PartySummaryType | null>(
 		null
 	);
+	const iframeRef = useRef<HTMLIFrameElement>(null);
+
+	// HTMLコンテンツから高さを推定する関数
+	const estimateContentHeight = (htmlContent: string): number => {
+		// ベースの高さ（ヘッダー、フッター、マージンなど）
+		const baseHeight = 200;
+
+		// 各要素の推定高さ（パディング、マージン含む）
+		const elementHeights = {
+			h1: 60,
+			h2: 50,
+			h3: 40,
+			h4: 35,
+			p: 30,
+			div: 30,
+			li: 35, // パディングを考慮
+			ul: 20, // マージン
+			ol: 20,
+			blockquote: 50,
+			table: 100, // テーブルは大きめに見積もる
+			tr: 40,
+			section: 20,
+			article: 20,
+		};
+
+		// HTMLをパースして要素をカウント
+		let estimatedHeight = baseHeight;
+
+		// タグごとのマッチング
+		for (const [tag, height] of Object.entries(elementHeights)) {
+			const regex = new RegExp(`<${tag}[^>]*>`, "gi");
+			const matches = htmlContent.match(regex);
+			if (matches) {
+				estimatedHeight += matches.length * height;
+			}
+		}
+
+		// テキスト量が多い場合の調整（長いコンテンツは折り返しを考慮）
+		const textLength = htmlContent.replace(/<[^>]*>/g, "").length;
+		if (textLength > 5000) {
+			estimatedHeight += Math.floor((textLength - 5000) / 100) * 10;
+		}
+
+		// グリッドやカードレイアウトの考慮
+		if (htmlContent.includes("grid") || htmlContent.includes("card")) {
+			estimatedHeight += 200;
+		}
+
+		// 余裕を持たせた上で、最小高さを保証
+		return Math.max(estimatedHeight * 1.2, 800);
+	};
+
+	// iframeの高さを動的に調整する関数
+	const adjustIframeHeight = useCallback(() => {
+		const iframe = iframeRef.current;
+		if (!iframe) return;
+
+		const content = generatedHtml || savedSummary?.html_content || "";
+		if (content) {
+			const estimatedHeight = estimateContentHeight(content);
+			// 100px単位で切り上げ
+			const roundedHeight = Math.ceil(estimatedHeight / 100) * 100;
+			iframe.style.height = `${roundedHeight}px`;
+		} else {
+			// コンテンツがない場合はデフォルト高さ
+			iframe.style.height = "800px";
+		}
+	}, [generatedHtml, savedSummary]);
 
 	// Supabaseから政党要約を取得
 	useEffect(() => {
@@ -47,6 +116,17 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 		};
 		fetchSummary();
 	}, [party.id]);
+
+	// HTMLコンテンツが変更されたときの処理
+	useEffect(() => {
+		if (
+			(generatedHtml || savedSummary?.html_content) &&
+			iframeRef.current
+		) {
+			// コンテンツが変更されたら高さを再計算
+			adjustIframeHeight();
+		}
+	}, [generatedHtml, savedSummary, adjustIframeHeight]);
 
 	const handleGenerateSummary = async () => {
 		console.log("🚀 要約生成開始");
@@ -140,7 +220,7 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 	};
 
 	return (
-		<div className="space-y-8 h-full flex flex-col">
+		<div className="space-y-2 h-full flex flex-col">
 			{/* ヘッダー */}
 			<div className="flex items-start gap-4">
 				<div className="flex-1">
@@ -203,13 +283,19 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 				<div className="flex-1">
 					{/* HTMLコンテンツを表示 */}
 					<iframe
+						ref={iframeRef}
 						srcDoc={
 							generatedHtml || savedSummary?.html_content || ""
 						}
-						className="w-full min-h-[800px] border-0"
+						className="w-full border-0"
 						sandbox="allow-scripts"
 						title="政党情報サマリー"
-						style={{ height: "2400px" }}
+						style={{ minHeight: "800px" }}
+						onLoad={() => {
+							// iframeが読み込まれたら高さを再計算
+							// コンテンツ内の画像などが遅れて読み込まれる場合に備えて、少し待ってから再調整
+							setTimeout(adjustIframeHeight, 300);
+						}}
 					/>
 
 					{/* メタデータ */}
