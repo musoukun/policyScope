@@ -1,0 +1,10 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": ".mastra/output",
+  "installCommand": "npm install",
+  "functions": {
+    "index.mjs": {
+      "maxDuration": 30
+    }
+  }
+}
