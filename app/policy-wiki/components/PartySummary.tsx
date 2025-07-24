@@ -82,7 +82,7 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 
 		try {
 			const agent = getPartyResearchAgent();
-			const response = await agent.generate({
+			const response = await agent.stream({
 				messages: [
 					{
 						role: "user",
@@ -91,20 +91,29 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 				],
 			});
 
-			console.log("✅ 要約生成完了");
+			// ストリーミングレスポンスを処理
+			let fullHtml = "";
+			await response.processDataStream({
+				onTextPart: (text) => {
+					// 最初のテキストを受け取ったらローディングHTMLをクリア
+					if (fullHtml === "") {
+						setGeneratedHtml("");
+					}
+					fullHtml += text;
+					// プレースホルダー画像URLを置き換え
+					const processedHtml = fullHtml.replace(
+						/https:\/\/via\.placeholder\.com\/[^"'\s]*/g,
+						"data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZTVlN2ViIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzZiNzI4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+Q2hhcnQgUGxhY2Vob2xkZXI8L3RleHQ+PC9zdmc+"
+					);
+					setGeneratedHtml(processedHtml);
+				},
+				onErrorPart: (error) => {
+					console.error("❌ エラー:", error);
+					setError("要約の生成中にエラーが発生しました");
+				},
+			});
 
-			// レスポンスからHTMLを取得
-			let fullHtml = response.text;
-			
-			// プレースホルダー画像URLを置き換え
-			const processedHtml = fullHtml.replace(
-				/https:\/\/via\.placeholder\.com\/[^"'\s]*/g,
-				"data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZTVlN2ViIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzZiNzI4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+Q2hhcnQgUGxhY2Vob2xkZXI8L3RleHQ+PC9zdmc+"
-			);
-			setGeneratedHtml(processedHtml);
-			
-			// fullHtmlを後続の処理で使用
-			fullHtml = processedHtml;
+			console.log("✅ 要約生成完了");
 
 			// Supabaseに保存
 			if (fullHtml) {
