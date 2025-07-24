@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Agent } from "@mastra/core/agent";
 
 import memory from "../memory";
