@@ -26,6 +26,7 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 	const iframeRef = useRef<HTMLIFrameElement>(null);
 	const [scope, animate] = useAnimate();
 	const [displayedText, setDisplayedText] = useState("");
+	const [displayedTextEn, setDisplayedTextEn] = useState("");
 
 	// HTMLコンテンツから高さを推定する関数
 	const estimateContentHeight = (htmlContent: string): number => {
@@ -74,7 +75,7 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 		}
 
 		// 余裕を持たせた上で、最小高さを保証
-		return Math.max(estimatedHeight * 1.2 - 3, 800);
+		return Math.max(estimatedHeight * 1.2 - 10, 800);
 	};
 
 	// iframeの高さを動的に調整する関数
@@ -98,18 +99,29 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 	useEffect(() => {
 		let isActive = true;
 		let currentIndex = 0;
+		let currentIndexEn = 0;
 
 		const typeText = async () => {
 			setDisplayedText("");
+			setDisplayedTextEn("");
 			currentIndex = 0;
+			currentIndexEn = 0;
 
 			// 少し遅延してから開始
 			await new Promise((resolve) => setTimeout(resolve, 300));
 
+			// 日本語名をタイプ
 			while (isActive && currentIndex < party.name.length) {
 				setDisplayedText(party.name.slice(0, currentIndex + 1));
 				currentIndex++;
 				await new Promise((resolve) => setTimeout(resolve, 150)); // 遅めのタイピング速度
+			}
+
+			// 日本語名が終わったら英語名をタイプ
+			while (isActive && currentIndexEn < party.name_en.length) {
+				setDisplayedTextEn(party.name_en.slice(0, currentIndexEn + 1));
+				currentIndexEn++;
+				await new Promise((resolve) => setTimeout(resolve, 50)); // 英語は少し速め
 			}
 		};
 
@@ -118,7 +130,7 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 		return () => {
 			isActive = false;
 		};
-	}, [party.name]);
+	}, [party.name, party.name_en]);
 
 	// Supabaseから政党要約を取得
 	useEffect(() => {
@@ -182,7 +194,7 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
 						</svg>
 					</div>
-					<h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 16px; color: #1f2937;">${party.name}</h2>
+					<h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 2px; color: #1f2937;">${party.name}</h2>
 					<div id="message-container" style="height: 60px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center;">
 						<p id="message-text" style="color: #6b7280; margin: 0; position: absolute; width: 100%; line-height: 1.5; padding: 0 20px; text-align: center; transition: all 0.3s ease-out;">要約情報を生成中です。</p>
 					</div>
@@ -359,8 +371,21 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 							</div>
 						)}
 					</div>
-					<p className="text-lg text-muted-foreground">
-						{party.name_en}
+					<p className="text-lg text-muted-foreground relative">
+						<span className="inline-block">
+							{displayedTextEn}
+							{displayedTextEn.length < party.name_en.length && (
+								<motion.span
+									className="inline-block w-0.5 h-5 bg-current ml-0.5 align-middle"
+									animate={{ opacity: [1, 0] }}
+									transition={{
+										duration: 0.8,
+										repeat: Infinity,
+										repeatType: "reverse",
+									}}
+								/>
+							)}
+						</span>
 					</p>
 				</div>
 			</div>

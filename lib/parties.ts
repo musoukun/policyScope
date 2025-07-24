@@ -3,8 +3,8 @@ import type { Party } from "@/types/party";
 // 政党のカラーコード（公式カラーに基づく）
 export const PARTY_COLORS: Record<string, string> = {
   ldp: "#C7000B",        // 自民党 - 赤（自民党公式の赤）
-  komeito: "#FF69B4",    // 公明党 - ピンク（公明党の伝統的なピンク）
-  cdp: "#004EA2",        // 立憲民主党 - 立憲ブルー（公式の青）
+  komeito: "#FFB6C1",    // 公明党 - ピンク（公明党の伝統的なピンク）
+  cdp: "#4682B4",        // 立憲民主党 - 立憲ブルー（公式の青）
   ishin: "#228B22",      // 維新 - 緑（維新グリーン）
   jcp: "#7B68EE",        // 共産党 - 紫（赤を避けて紫を使用）
   dpfp: "#FF8C00",       // 国民民主党 - オレンジ（濃い目のオレンジ）

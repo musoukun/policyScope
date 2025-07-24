@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RefreshCw, ExternalLink } from "lucide-react";
 import type { Party, PartyNews as PartyNewsType } from "@/types/party";
@@ -67,9 +66,13 @@ export function PartyNews({ party }: PartyNewsProps) {
 				<p className="text-sm text-muted-foreground mb-4">
 					ニュースを取得するには更新ボタンをクリックしてください
 				</p>
-				<Button onClick={fetchNews} disabled={updating}>
+				<button
+					onClick={fetchNews}
+					disabled={updating}
+					className="relative inline-flex items-center justify-center gap-2 h-11 px-6 text-base font-medium rounded-lg transition-all duration-300 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white border-2 border-zinc-900 dark:border-white hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-zinc-900 shadow-[3px_3px_0_0_rgba(0,0,0,1)] dark:shadow-[3px_3px_0_0_rgba(255,255,255,1)] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none active:translate-x-[2px] active:translate-y-[2px] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-[3px_3px_0_0_rgba(0,0,0,1)] disabled:dark:hover:shadow-[3px_3px_0_0_rgba(255,255,255,1)] disabled:hover:translate-x-0 disabled:hover:translate-y-0"
+				>
 					{updating ? "取得中..." : "ニュースを取得"}
-				</Button>
+				</button>
 			</div>
 		);
 	}
@@ -104,17 +107,16 @@ export function PartyNews({ party }: PartyNewsProps) {
 							)}
 						</span>
 					)}
-					<Button
-						size="sm"
-						variant="outline"
+					<button
 						onClick={fetchNews}
 						disabled={updating}
+						className="relative inline-flex items-center justify-center gap-2 h-8 px-4 text-sm font-medium rounded-md transition-all duration-300 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white border-2 border-zinc-900 dark:border-white hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-zinc-900 shadow-[2px_2px_0_0_rgba(0,0,0,1)] dark:shadow-[2px_2px_0_0_rgba(255,255,255,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:translate-x-[1px] active:translate-y-[1px] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-[2px_2px_0_0_rgba(0,0,0,1)] disabled:dark:hover:shadow-[2px_2px_0_0_rgba(255,255,255,1)] disabled:hover:translate-x-0 disabled:hover:translate-y-0"
 					>
 						<RefreshCw
-							className={`h-4 w-4 mr-2 ${updating ? "animate-spin" : ""}`}
+							className={`h-4 w-4 ${updating ? "animate-spin" : ""}`}
 						/>
 						更新
-					</Button>
+					</button>
 				</div>
 			</div>
 
