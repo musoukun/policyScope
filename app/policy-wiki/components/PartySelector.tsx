@@ -47,7 +47,7 @@ export function PartySelector({ parties }: PartySelectorProps) {
 	}, [selectedParty]);
 
 	return (
-		<div 
+		<div
 			ref={containerRef}
 			className="relative grid grid-cols-3 md:grid-cols-5 lg:grid-cols-11 gap-2 mb-6"
 		>
@@ -66,14 +66,14 @@ export function PartySelector({ parties }: PartySelectorProps) {
 						stiffness: 400,
 						damping: 30,
 					}}
-					style={{ 
-						height: "100%", 
+					style={{
+						height: "100%",
 						top: "0",
 						backgroundColor: PARTY_COLORS[selectedParty] || "#000",
 					}}
 				/>
 			)}
-			
+
 			{/* タブボタン */}
 			{parties.map((party) => {
 				const isSelected = selectedParty === party.id;
@@ -98,8 +98,12 @@ export function PartySelector({ parties }: PartySelectorProps) {
 								: "text-gray-900 dark:text-gray-100 hover:bg-muted/50 after:bg-current shadow-[2px_2px_0_0_currentColor] hover:shadow-none"
 						)}
 						style={{
-							borderColor: isSelected ? "transparent" : PARTY_COLORS[party.id],
-							boxShadow: !isSelected ? `2px 2px 0 0 ${PARTY_COLORS[party.id]}` : undefined,
+							borderColor: isSelected
+								? "transparent"
+								: PARTY_COLORS[party.id],
+							boxShadow: !isSelected
+								? `2px 2px 0 0 ${PARTY_COLORS[party.id]}`
+								: undefined,
 						}}
 						whileHover={{ scale: 1.05 }}
 						whileTap={{ scale: 0.95 }}
