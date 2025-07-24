@@ -4,7 +4,7 @@ export interface StreamMessage {
   text?: string;
   error?: string;
   toolName?: string;
-  args?: any;
+  args?: Record<string, unknown>;
 }
 
 export interface MastraMessage {

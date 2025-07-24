@@ -240,11 +240,13 @@ export async function updatePartyNews(
 		return result.data;
 	} catch (err) {
 		console.error("Unexpected error in updatePartyNews:", err);
-		console.error("エラー詳細:", {
-			name: err.name,
-			message: err.message,
-			stack: err.stack,
-		});
+		if (err instanceof Error) {
+			console.error("エラー詳細:", {
+				name: err.name,
+				message: err.message,
+				stack: err.stack,
+			});
+		}
 		return null;
 	}
 }

@@ -1,10 +1,7 @@
 import { Agent } from "@mastra/core/agent";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import memory from "../memory";
 
-export const google = createGoogleGenerativeAI({
-	apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
-});
+import memory from "../memory";
+import { google } from "..";
 
 export const googlemodel = google("gemini-2.0-flash", {
 	useSearchGrounding: true,

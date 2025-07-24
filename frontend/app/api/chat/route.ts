@@ -21,7 +21,12 @@ export async function POST(req: Request) {
 
 	try {
 		// スレッドは既に作成済みなので、そのまま使用
-		const streamParams: any = {
+		const streamParams: {
+			messages: typeof messages;
+			threadId?: string;
+			resourceId?: string;
+			agentId?: string;
+		} = {
 			messages,
 		};
 

@@ -19,22 +19,22 @@ export function PartyNews({ party }: PartyNewsProps) {
   const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
+    const loadNews = async () => {
+      console.log("📰 loadNews開始 - party.id:", party.id);
+      setLoading(true);
+      try {
+        const data = await getPartyNews(party.id);
+        console.log("📰 getPartyNews結果:", data);
+        setNewsData(data);
+      } catch (error) {
+        console.error("ニュースの読み込みに失敗しました:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadNews();
   }, [party.id]);
-
-  const loadNews = async () => {
-    console.log("📰 loadNews開始 - party.id:", party.id);
-    setLoading(true);
-    try {
-      const data = await getPartyNews(party.id);
-      console.log("📰 getPartyNews結果:", data);
-      setNewsData(data);
-    } catch (error) {
-      console.error("ニュースの読み込みに失敗しました:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchNews = async () => {
     console.log("🔄 fetchNews開始 - party.id:", party.id, "party.name:", party.name);

@@ -10,14 +10,11 @@
  * @github: https://github.com/kokonut-labs/kokonutui
  */
 
-import { Globe, Paperclip, Send } from "lucide-react";
+import { Send } from "lucide-react";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { useAutoResizeTextarea } from "@/hooks/use-auto-resize-textarea";
-import { useChatStore } from "@/lib/stores/chat-store";
-import { useRouter } from "next/navigation";
 
 export default function AI_Input_Search() {
 	const [value, setValue] = useState("");
@@ -25,10 +22,7 @@ export default function AI_Input_Search() {
 		minHeight: 52,
 		maxHeight: 200,
 	});
-	const [showSearch, setShowSearch] = useState(true);
 	const [isFocused, setIsFocused] = useState(false);
-	const setChatInitData = useChatStore((state) => state.setChatInitData);
-	const router = useRouter();
 
 	const handleSubmit = async () => {
 		if (value.trim()) {

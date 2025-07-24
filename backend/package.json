@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "mastra dev",
     "build": "mastra build",
-    "start": "mastra start"
+    "start": "mastra start",
+    "deploy": "mastra build && cd .mastra/output && vercel --prod --prebuilt --archive=tgz"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +20,7 @@
   "dependencies": {
     "@ai-sdk/google": "^1.2.22",
     "@mastra/core": "^0.11.0",
+    "@mastra/deployer-vercel": "^0.11.8",
     "@mastra/libsql": "^0.11.1",
     "@mastra/loggers": "^0.10.3",
     "@mastra/memory": "^0.11.4",

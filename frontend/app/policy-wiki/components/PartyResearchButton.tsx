@@ -11,8 +11,6 @@ interface PartyResearchButtonProps {
 }
 
 export function PartyResearchButton({
-	partyName,
-	partyNameJa,
 	onResearch,
 	isLoading = false,
 }: PartyResearchButtonProps) {
