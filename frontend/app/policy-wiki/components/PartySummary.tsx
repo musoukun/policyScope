@@ -5,25 +5,25 @@ import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getPartyResearchAgent } from "@/lib/mastra-client";
-import { getPartySummary, savePartySummary } from "@/app/actions/party-summaries";
+import {
+	getPartySummary,
+	savePartySummary,
+} from "@/app/actions/party-summaries";
 
 interface PartySummaryProps {
 	party: Party;
-	summary?: PartySummaryType | null;
 	onSummaryUpdate?: (summary: PartySummaryType) => void;
 }
 
-export function PartySummary({
-	party,
-	summary,
-	onSummaryUpdate,
-}: PartySummaryProps) {
+export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 	const [isGenerating, setIsGenerating] = useState(false);
 	const [generatedHtml, setGeneratedHtml] = useState<string>("");
 	const [error, setError] = useState<string | null>(null);
 	const [showIframe, setShowIframe] = useState(false);
 	const [loading, setLoading] = useState(true);
-	const [savedSummary, setSavedSummary] = useState<PartySummaryType | null>(null);
+	const [savedSummary, setSavedSummary] = useState<PartySummaryType | null>(
+		null
+	);
 
 	// Supabaseから政党要約を取得
 	useEffect(() => {
@@ -33,7 +33,7 @@ export function PartySummary({
 			setShowIframe(false);
 			setSavedSummary(null);
 			setError(null);
-			
+
 			setLoading(true);
 			try {
 				const data = await getPartySummary(party.id);
@@ -55,12 +55,12 @@ export function PartySummary({
 		console.log("🚀 要約生成開始");
 		console.log("📊 政党名:", party.name);
 		console.log("🆔 政党ID:", party.id);
-		
+
 		setIsGenerating(true);
 		setError(null);
 		setGeneratedHtml("");
 		setShowIframe(true);
-		
+
 		// 生成中のHTMLを設定
 		const loadingHtml = `
 			<div style="display: flex; align-items: center; justify-content: center; height: 100vh; font-family: system-ui, -apple-system, sans-serif;">
@@ -82,14 +82,16 @@ export function PartySummary({
 			</div>
 		`;
 		setGeneratedHtml(loadingHtml);
-		
+
 		try {
 			const agent = getPartyResearchAgent();
 			const response = await agent.stream({
-				messages: [{
-					role: "user",
-					content: party.name
-				}]
+				messages: [
+					{
+						role: "user",
+						content: party.name,
+					},
+				],
 			});
 
 			// ストリーミングレスポンスを処理
@@ -104,25 +106,25 @@ export function PartySummary({
 					// プレースホルダー画像URLを置き換え
 					const processedHtml = fullHtml.replace(
 						/https:\/\/via\.placeholder\.com\/[^"'\s]*/g,
-						'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZTVlN2ViIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzZiNzI4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+Q2hhcnQgUGxhY2Vob2xkZXI8L3RleHQ+PC9zdmc+'
+						"data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZTVlN2ViIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzZiNzI4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+Q2hhcnQgUGxhY2Vob2xkZXI8L3RleHQ+PC9zdmc+"
 					);
 					setGeneratedHtml(processedHtml);
 				},
 				onErrorPart: (error) => {
 					console.error("❌ エラー:", error);
 					setError("要約の生成中にエラーが発生しました");
-				}
+				},
 			});
 
 			console.log("✅ 要約生成完了");
-			
+
 			// Supabaseに保存
 			if (fullHtml) {
 				try {
 					const saved = await savePartySummary(party.id, fullHtml);
 					setSavedSummary(saved);
 					console.log("💾 要約をSupabaseに保存しました");
-					
+
 					// 親コンポーネントに通知
 					if (onSummaryUpdate) {
 						onSummaryUpdate(saved);
@@ -180,7 +182,7 @@ export function PartySummary({
 					<RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
 				</div>
 			) : /* コンテンツエリア */
-			(!savedSummary && !showIframe) ? (
+			!savedSummary && !showIframe ? (
 				<div className="text-center py-16">
 					<p className="text-muted-foreground mb-4">
 						まだ情報が取得されていません
@@ -204,11 +206,13 @@ export function PartySummary({
 				<div className="flex-1">
 					{/* HTMLコンテンツを表示 */}
 					<iframe
-						srcDoc={generatedHtml || savedSummary?.html_content || ""}
+						srcDoc={
+							generatedHtml || savedSummary?.html_content || ""
+						}
 						className="w-full min-h-[800px] border-0"
 						sandbox="allow-scripts"
 						title="政党情報サマリー"
-						style={{ height: '1200px' }}
+						style={{ height: "1200px" }}
 					/>
 
 					{/* メタデータ */}
@@ -216,7 +220,9 @@ export function PartySummary({
 						最終更新:{" "}
 						{savedSummary?.updated_at
 							? new Date(savedSummary.updated_at).toLocaleString()
-							: generatedHtml ? new Date().toLocaleString() : "N/A"}
+							: generatedHtml
+								? new Date().toLocaleString()
+								: "N/A"}
 					</div>
 				</div>
 			)}
@@ -231,7 +237,7 @@ export function PartySummary({
 								政党情報を生成中...
 							</span>
 						</div>
-						
+
 						{/* スケルトンローディング */}
 						<div className="space-y-3">
 							<div className="h-4 bg-muted/20 rounded animate-pulse" />

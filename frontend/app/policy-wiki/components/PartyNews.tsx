@@ -23,9 +23,11 @@ export function PartyNews({ party }: PartyNewsProps) {
   }, [party.id]);
 
   const loadNews = async () => {
+    console.log("📰 loadNews開始 - party.id:", party.id);
     setLoading(true);
     try {
       const data = await getPartyNews(party.id);
+      console.log("📰 getPartyNews結果:", data);
       setNewsData(data);
     } catch (error) {
       console.error("ニュースの読み込みに失敗しました:", error);
@@ -35,11 +37,16 @@ export function PartyNews({ party }: PartyNewsProps) {
   };
 
   const fetchNews = async () => {
+    console.log("🔄 fetchNews開始 - party.id:", party.id, "party.name:", party.name);
     setUpdating(true);
     try {
+      console.log("🔄 updatePartyNews呼び出し開始");
       const updatedNews = await updatePartyNews(party.id, party.name);
+      console.log("🔄 updatePartyNews結果:", updatedNews);
       if (updatedNews) {
         setNewsData(updatedNews);
+      } else {
+        console.log("⚠️ updatedNewsがnullまたはundefined");
       }
     } catch (error) {
       console.error("ニュースの更新に失敗しました:", error);
