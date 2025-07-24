@@ -6,8 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "mastra dev",
-    "build": "mastra build --env ./.env",
-    "build:prod": "mastra build",
+    "build": "mastra build",
     "start": "mastra start",
     "deploy": "mastra build && cd .mastra/output && vercel --prod --prebuilt --archive=tgz"
   },
