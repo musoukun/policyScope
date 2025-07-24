@@ -14,7 +14,12 @@ export const google = createGoogleGenerativeAI({
 export const mastra = new Mastra({
 	server: {
 		cors: {
-			origin: ["https://example.com"], // 特定のオリジンを許可（'*'で全て許可）
+			origin: [
+				"https://policy-scope.vercel.app",
+				"https://policy-scope-*.vercel.app",
+				"http://localhost:3000",
+				"http://localhost:3001"
+			], // Vercelとローカル開発環境を許可
 			allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 			allowHeaders: ["Content-Type", "Authorization"],
 			credentials: false,
