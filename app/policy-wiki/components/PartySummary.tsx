@@ -1,4 +1,3 @@
-/* eslint-disable prefer-const */
 "use client";
 
 import type { Party, PartySummary as PartySummaryType } from "@/types/party";
