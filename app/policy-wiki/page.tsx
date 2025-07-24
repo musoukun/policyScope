@@ -1,4 +1,4 @@
-import { getAllParties } from "@/app/actions/parties";
+import { getAllParties } from "@/lib/api/parties";
 import { PartySelector } from "./components/PartySelector";
 import { PolicyWikiContent } from "./components/PolicyWikiContent";
 import AI_Input_Search from "./components/AI_Input_Search";

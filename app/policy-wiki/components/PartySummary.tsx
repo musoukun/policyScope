@@ -8,7 +8,7 @@ import { getPartyResearchAgent } from "@/lib/mastra-client";
 import {
 	getPartySummary,
 	savePartySummary,
-} from "@/app/actions/party-summaries";
+} from "@/lib/api/parties";
 
 interface PartySummaryProps {
 	party: Party;

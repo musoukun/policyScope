@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RefreshCw, ExternalLink } from "lucide-react";
 import type { Party, PartyNews as PartyNewsType } from "@/types/party";
-import { getPartyNews, updatePartyNews } from "@/app/actions/parties";
+import { getPartyNews, updatePartyNews } from "@/lib/api/parties";
 import { formatDistanceToNow } from "date-fns";
 import { ja } from "date-fns/locale";
 
