@@ -136,7 +136,7 @@ export function PartyNews({ party }: PartyNewsProps) {
 							href={item.url}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="inline-flex items-center text-sm text-primary hover:underline"
+							className="inline-flex items-center text-sm font-medium text-primary hover:underline"
 						>
 							記事を読む
 							<ExternalLink className="h-3 w-3 ml-1" />
