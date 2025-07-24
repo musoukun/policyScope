@@ -1,5 +1,4 @@
 import { Mastra } from "@mastra/core";
-import { VercelDeployer } from "@mastra/deployer-vercel";
 import { partyResearchAgent } from "./agents/party-research-agent";
 import { htmlArtifactAgent } from "./agents/html-artifact-agent";
 import { partyResearchWorkflow } from "./workflows/party-research-workflow";

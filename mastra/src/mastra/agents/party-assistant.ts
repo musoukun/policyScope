@@ -1,7 +1,7 @@
 import { Agent } from "@mastra/core/agent";
 
 import memory from "../memory";
-import { google } from "..";
+import { google } from ".";
 
 export const googlemodel = google("gemini-2.0-flash", {
 	useSearchGrounding: true,

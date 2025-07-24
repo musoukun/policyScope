@@ -1,10 +1,6 @@
 import { Agent } from "@mastra/core/agent";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { artifactsTool } from "../tools/artifacts";
-
-const google = createGoogleGenerativeAI({
-	apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
-});
+import { google } from ".";
 
 // gemma-3n-e4b-it モデルを使用
 const model = google("gemini-2.0-flash");

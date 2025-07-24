@@ -1,5 +1,5 @@
 import { Agent } from "@mastra/core/agent";
-import { google } from "..";
+import { google } from ".";
 import memory from "../memory";
 
 export const googlemodel = google("gemini-2.5-flash-lite", {

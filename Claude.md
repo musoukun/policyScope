@@ -27,7 +27,7 @@ PolicyScopeは政党の政策を包括的に分析・比較するWebアプリケ
 
 ## 開発コマンド
 
-### フロントエンド (/frontend)
+### フロントエンド (ルートディレクトリ)
 ```bash
 npm run dev        # 開発サーバー起動 (http://localhost:3000) - Turbopack使用
 npm run build      # プロダクションビルド
@@ -35,8 +35,9 @@ npm run start      # プロダクションサーバー起動
 npm run lint       # ESLint実行
 ```
 
-### バックエンド (/backend)
+### バックエンド (/mastra)
 ```bash
+cd mastra
 npm run dev        # Mastra開発サーバー起動 (http://localhost:4111)
 npm run build      # Mastraビルド
 npm run start      # Mastraプロダクションサーバー起動
@@ -54,15 +55,15 @@ npm run start      # Mastraプロダクションサーバー起動
   - Mastra Framework - AIエージェント・ワークフロー管理
 - **データベース**: Supabase (PostgreSQL + pgvector拡張)
 - **主要ディレクトリ**:
-  - `frontend/app/actions/` - Server Actions（parties.ts - 政党データCRUD）
-  - `frontend/app/api/` - API Routes（chat、research-party - Server Actionsへ移行推奨）
-  - `frontend/app/demo/` - 手動テスト用ページ（現在simple-chatのみ）
-  - `frontend/app/policy-wiki/` - メインアプリケーション
-  - `frontend/lib/` - ユーティリティ（supabase.ts、parties.ts、mastra/）
-  - `frontend/lib/mastra/agents/` - AIエージェント設定とスキーマ
-  - `frontend/components/` - 共通UIコンポーネント（shadcn/ui、assistant-ui）
-  - `frontend/types/` - 型定義（party.ts）
-  - `backend/src/mastra/` - バックエンドディレクトリ
+  - `app/actions/` - Server Actions（parties.ts - 政党データCRUD）
+  - `app/api/` - API Routes（chat、research-party - Server Actionsへ移行推奨）
+  - `app/demo/` - 手動テスト用ページ（現在simple-chatのみ）
+  - `app/policy-wiki/` - メインアプリケーション
+  - `lib/` - ユーティリティ（supabase.ts、parties.ts、mastra/）
+  - `lib/mastra/agents/` - AIエージェント設定とスキーマ
+  - `components/` - 共通UIコンポーネント（shadcn/ui、assistant-ui）
+  - `types/` - 型定義（party.ts）
+  - `mastra/src/mastra/` - バックエンドディレクトリ
     - `agents/` - AIエージェント（party-research-agent.ts、party-assistant.ts、html-artifact-agent.ts）
     - `workflows/` - ワークフロー（party-research-workflow.ts）
     - `tools/` - カスタムツール（artifacts.ts）
