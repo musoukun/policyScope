@@ -1,5 +1,7 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "npm run build && mkdir -p api && cp .mastra/output/index.mjs api/index.js",
   "installCommand": "npm install",
-  "outputDirectory": ".mastra/output"
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api" }
+  ]
 }
