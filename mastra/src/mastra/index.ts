@@ -12,6 +12,14 @@ export const google = createGoogleGenerativeAI({
 
 // Initialize Mastra with the comprehensive research agent and workflow
 export const mastra = new Mastra({
+	server: {
+		cors: {
+			origin: ["https://example.com"], // 特定のオリジンを許可（'*'で全て許可）
+			allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+			allowHeaders: ["Content-Type", "Authorization"],
+			credentials: false,
+		},
+	},
 	agents: {
 		partyResearchAgent: partyResearchAgent,
 		htmlArtifactAgent: htmlArtifactAgent,
