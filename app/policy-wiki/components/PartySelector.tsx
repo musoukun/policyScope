@@ -15,7 +15,7 @@ export function PartySelector({ parties }: PartySelectorProps) {
 	const [selectedParty, setSelectedParty] = useQueryState("party", {
 		defaultValue: parties[0]?.id || "ldp",
 	});
-	const [dimensions, setDimensions] = useState({ width: 0, left: 0 });
+	const [dimensions, setDimensions] = useState({ width: 0, left: 0, height: 0, top: 0 });
 	const buttonRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
 	const containerRef = useRef<HTMLDivElement>(null);
 
@@ -32,6 +32,8 @@ export function PartySelector({ parties }: PartySelectorProps) {
 				setDimensions({
 					width: rect.width,
 					left: rect.left - containerRect.left,
+					height: rect.height,
+					top: rect.top - containerRect.top,
 				});
 			}
 		};
@@ -58,7 +60,9 @@ export function PartySelector({ parties }: PartySelectorProps) {
 					initial={false}
 					animate={{
 						width: dimensions.width,
+						height: dimensions.height,
 						x: dimensions.left,
+						y: dimensions.top,
 						opacity: 1,
 					}}
 					transition={{
@@ -67,8 +71,6 @@ export function PartySelector({ parties }: PartySelectorProps) {
 						damping: 30,
 					}}
 					style={{
-						height: "100%",
-						top: "0",
 						backgroundColor: PARTY_COLORS[selectedParty] || "#000",
 					}}
 				/>
