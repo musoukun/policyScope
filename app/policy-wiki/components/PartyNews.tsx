@@ -22,6 +22,7 @@ export function PartyNews({ party }: PartyNewsProps) {
     const loadNews = async () => {
       console.log("📰 loadNews開始 - party.id:", party.id);
       setLoading(true);
+      setNewsData(null); // 政党が変わったらニュースデータをリセット
       try {
         const data = await getPartyNews(party.id);
         console.log("📰 getPartyNews結果:", data);
