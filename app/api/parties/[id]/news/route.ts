@@ -44,6 +44,10 @@ export async function POST(
 		const { partyName } = await request.json();
 
 		const mastraUrl = process.env.MASTRA_API_URL || "http://localhost:4111";
+		console.log("[API News Route] Mastra URL:", mastraUrl);
+		console.log("[API News Route] Party ID:", id);
+		console.log("[API News Route] Party Name:", partyName);
+		
 		const client = new MastraClient({
 			baseUrl: mastraUrl,
 		});
