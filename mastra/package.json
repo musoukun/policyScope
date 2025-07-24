@@ -19,15 +19,14 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^1.2.22",
-    "@mastra/core": "^0.11.0",
-    "@mastra/deployer-vercel": "^0.11.8",
+    "@mastra/core": "^0.10.15",
     "@mastra/memory": "^0.11.4",
     "@mastra/pg": "^0.12.4",
     "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/node": "^24.0.15",
-    "mastra": "^0.11.0",
+    "mastra": "^0.10.13",
     "typescript": "^5.8.3"
   }
 }
