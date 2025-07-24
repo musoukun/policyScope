@@ -1,7 +1,7 @@
 "use server";
 
-import { supabaseAdminAdmin } from "@/lib/supabaseAdmin-admin";
 import { PARTIES } from "@/lib/parties";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import type {
 	Party,
 	PartySummary,
@@ -150,8 +150,7 @@ export async function updatePartyNews(
 		partyName
 	);
 	try {
-		const mastraUrl =
-			process.env.MASTRA_API_URL || "http://localhost:4111";
+		const mastraUrl = process.env.MASTRA_API_URL || "http://localhost:4111";
 		console.log("🎯 Mastra URL:", mastraUrl);
 
 		const client = new MastraClient({
@@ -178,16 +177,16 @@ export async function updatePartyNews(
 		try {
 			// ```json と ``` を削除
 			let cleanedText = response.text.trim();
-			if (cleanedText.startsWith('```json')) {
-				cleanedText = cleanedText.replace(/^```json\s*/, '');
+			if (cleanedText.startsWith("```json")) {
+				cleanedText = cleanedText.replace(/^```json\s*/, "");
 			}
-			if (cleanedText.startsWith('```')) {
-				cleanedText = cleanedText.replace(/^```\s*/, '');
+			if (cleanedText.startsWith("```")) {
+				cleanedText = cleanedText.replace(/^```\s*/, "");
 			}
-			if (cleanedText.endsWith('```')) {
-				cleanedText = cleanedText.replace(/```\s*$/, '');
+			if (cleanedText.endsWith("```")) {
+				cleanedText = cleanedText.replace(/```\s*$/, "");
 			}
-			
+
 			newsData = JSON.parse(cleanedText);
 			console.log("🎯 パース成功:", newsData);
 		} catch (parseError) {
