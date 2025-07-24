@@ -281,7 +281,11 @@ demo/        フロントエンドから実行できる手動テストページ
 
 - 更新は Server Actions、即時反映は useSWR.mutate で楽観的更新
 - Supabase は RLS + auth.uid() を利用し、user.id 明示は不要
+- ext.js 15の要件に従って、動的ルートのパラメータを非同期で取得する
 
+  1. paramsの型をPromise<{ id: string }>に変更
+  2. const { id } = await params;でパラメータを取得
+   
 ## 表示と状態管理
 - UI は極力自作せず、必ず **shadcn/ui** のコンポーネントを利用
 - アイコンは **lucide-react** を統一使用

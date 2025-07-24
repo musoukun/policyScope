@@ -3,13 +3,14 @@ import { supabase } from "@/lib/supabase";
 
 export async function GET(
 	request: Request,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
+	const { id } = await params;
 	try {
 		const { data, error } = await supabase
 			.from("party_summaries")
 			.select("*")
-			.eq("party_id", params.id)
+			.eq("party_id", id)
 			.order("created_at", { ascending: false })
 			.limit(1)
 			.single();
@@ -34,15 +35,16 @@ export async function GET(
 
 export async function POST(
 	request: Request,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
+	const { id } = await params;
 	try {
 		const { htmlContent } = await request.json();
 
 		const { data: existing } = await supabase
 			.from("party_summaries")
 			.select("id")
-			.eq("party_id", params.id)
+			.eq("party_id", id)
 			.single();
 
 		let result;
@@ -54,7 +56,7 @@ export async function POST(
 					summary_data: {},
 					updated_at: new Date().toISOString(),
 				})
-				.eq("party_id", params.id)
+				.eq("party_id", id)
 				.select()
 				.single();
 
@@ -63,7 +65,7 @@ export async function POST(
 			const { data, error } = await supabase
 				.from("party_summaries")
 				.insert({
-					party_id: params.id,
+					party_id: id,
 					html_content: htmlContent,
 					summary_data: {},
 				})

@@ -4,18 +4,19 @@ import { PARTIES } from "@/lib/parties";
 
 export async function GET(
 	request: Request,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
+	const { id } = await params;
 	try {
 		const { data, error } = await supabase
 			.from("parties")
 			.select("*")
-			.eq("id", params.id)
+			.eq("id", id)
 			.single();
 
 		if (error) {
 			console.error("Error fetching party:", error);
-			const fallback = PARTIES.find((p) => p.id === params.id);
+			const fallback = PARTIES.find((p) => p.id === id);
 			if (fallback) {
 				return NextResponse.json(fallback);
 			}

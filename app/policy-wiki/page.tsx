@@ -1,10 +1,10 @@
-import { getAllParties } from "@/lib/api/parties";
+import { getAllPartiesServer } from "@/lib/server/parties";
 import { PartySelector } from "./components/PartySelector";
 import { PolicyWikiContent } from "./components/PolicyWikiContent";
 import AI_Input_Search from "./components/AI_Input_Search";
 
 export default async function PolicyWikiPage() {
-  const parties = await getAllParties();
+  const parties = await getAllPartiesServer();
 
   return (
     <div className="relative min-h-screen">

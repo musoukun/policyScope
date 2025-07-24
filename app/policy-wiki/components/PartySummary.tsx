@@ -126,7 +126,7 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 					console.log("💾 要約をSupabaseに保存しました");
 
 					// 親コンポーネントに通知
-					if (onSummaryUpdate) {
+					if (onSummaryUpdate && saved) {
 						onSummaryUpdate(saved);
 					}
 				} catch (error) {

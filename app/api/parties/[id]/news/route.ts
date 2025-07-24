@@ -5,13 +5,14 @@ import type { PartyNewsItem } from "@/types/party";
 
 export async function GET(
 	request: Request,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
+	const { id } = await params;
 	try {
 		const { data, error } = await supabase
 			.from("party_news")
 			.select("*")
-			.eq("party_id", params.id)
+			.eq("party_id", id)
 			.order("created_at", { ascending: false })
 			.limit(1)
 			.single();
@@ -36,8 +37,9 @@ export async function GET(
 
 export async function POST(
 	request: Request,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
+	const { id } = await params;
 	try {
 		const { partyName } = await request.json();
 
@@ -81,7 +83,7 @@ export async function POST(
 		const { data: existing } = await supabase
 			.from("party_news")
 			.select("id")
-			.eq("party_id", params.id)
+			.eq("party_id", id)
 			.single();
 
 		let result;
@@ -92,7 +94,7 @@ export async function POST(
 					news_data: newsData,
 					updated_at: new Date().toISOString(),
 				})
-				.eq("party_id", params.id)
+				.eq("party_id", id)
 				.select()
 				.single();
 
@@ -101,7 +103,7 @@ export async function POST(
 			const { data, error } = await supabase
 				.from("party_news")
 				.insert({
-					party_id: params.id,
+					party_id: id,
 					news_data: newsData,
 				})
 				.select()
