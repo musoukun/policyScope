@@ -74,7 +74,7 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 		}
 
 		// 余裕を持たせた上で、最小高さを保証
-		return Math.max(estimatedHeight * 1.2 - 1, 800);
+		return Math.max(estimatedHeight * 1.2 - 3, 800);
 	};
 
 	// iframeの高さを動的に調整する関数

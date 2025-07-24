@@ -94,12 +94,11 @@ export function PartySelector({ parties }: PartySelectorProps) {
 							"hover:translate-x-[2px] hover:translate-y-[2px]",
 							"active:translate-x-[1px] active:translate-y-[1px]",
 							isSelected
-								? "text-white after:bg-white/70 border-transparent"
-								: "text-foreground hover:bg-muted/50 after:bg-current shadow-[2px_2px_0_0_currentColor] hover:shadow-none"
+								? "text-gray-900 dark:text-gray-100 after:bg-gray-900/70 dark:after:bg-gray-100/70 border-transparent"
+								: "text-gray-900 dark:text-gray-100 hover:bg-muted/50 after:bg-current shadow-[2px_2px_0_0_currentColor] hover:shadow-none"
 						)}
 						style={{
 							borderColor: isSelected ? "transparent" : PARTY_COLORS[party.id],
-							color: !isSelected ? PARTY_COLORS[party.id] : undefined,
 							boxShadow: !isSelected ? `2px 2px 0 0 ${PARTY_COLORS[party.id]}` : undefined,
 						}}
 						whileHover={{ scale: 1.05 }}

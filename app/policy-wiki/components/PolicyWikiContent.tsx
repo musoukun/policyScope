@@ -29,7 +29,9 @@ export function PolicyWikiContent({ parties }: PolicyWikiContentProps) {
 
 			{/* 右側：最新ニュース（3/10） */}
 			<div className="lg:col-span-3 min-h-0">
-				<PartyNews party={selectedParty} />
+				<div className="sticky top-4">
+					<PartyNews party={selectedParty} />
+				</div>
 			</div>
 		</div>
 	);

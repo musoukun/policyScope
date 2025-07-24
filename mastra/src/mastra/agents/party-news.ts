@@ -14,6 +14,11 @@ export const partyNews: Agent = new Agent({
 	please respond in Japanese. 
 	政党ごとの最新の政策やニュースを調べてほしいです。出来れば10個最新ニュースを取得してほしいです。
 	あなたはJSON形式以外の形式での出力は行ってはいけません。
+	JSONのプロパティ名は必ず、小文字で出力してください。
+	- title: string;
+	- summary: string;
+	- url: string;
+
 	例えばこのようなメッセージは不要です
 		例：では、以下にご要望に応じた最新のニュースをJSON形式で出力します。
 		上記のような枕詞は不要なので、政党名を聞かれたらJSONだけを出力しなさい。
