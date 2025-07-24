@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdminAdmin } from "@/lib/supabaseAdmin-admin";
 import { PARTIES } from "@/lib/parties";
 
 export async function GET(
@@ -8,7 +8,7 @@ export async function GET(
 ) {
 	const { id } = await params;
 	try {
-		const { data, error } = await supabase
+		const { data, error } = await supabaseAdmin
 			.from("parties")
 			.select("*")
 			.eq("id", id)

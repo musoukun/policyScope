@@ -1,5 +1,5 @@
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
 
 export async function GET(
 	request: Request,
@@ -7,7 +7,7 @@ export async function GET(
 ) {
 	const { id } = await params;
 	try {
-		const { data, error } = await supabase
+		const { data, error } = await supabaseAdmin
 			.from("party_summaries")
 			.select("*")
 			.eq("party_id", id)
@@ -41,7 +41,7 @@ export async function POST(
 	try {
 		const { htmlContent } = await request.json();
 
-		const { data: existing } = await supabase
+		const { data: existing } = await supabaseAdmin
 			.from("party_summaries")
 			.select("id")
 			.eq("party_id", id)
@@ -49,7 +49,7 @@ export async function POST(
 
 		let result;
 		if (existing) {
-			const { data, error } = await supabase
+			const { data, error } = await supabaseAdmin
 				.from("party_summaries")
 				.update({
 					html_content: htmlContent,
@@ -62,7 +62,7 @@ export async function POST(
 
 			result = { data, error };
 		} else {
-			const { data, error } = await supabase
+			const { data, error } = await supabaseAdmin
 				.from("party_summaries")
 				.insert({
 					party_id: id,

@@ -3,21 +3,38 @@ import { PostgresStore, PgVector } from "@mastra/pg";
 
 // Supabaseの接続情報を環境変数から取得
 const connectionString = process.env.DATABASE_URL;
-console.log("PostgreSQL connection string:", connectionString);
-if (!connectionString) {
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// サービスロールキーが設定されている場合の処理
+let finalConnectionString = connectionString;
+
+if (supabaseServiceKey) {
+	// サービスロールキーが設定されている場合はそのまま使用
+	// PostgresStoreとPgVectorはPostgreSQLのロールベースの権限を使用
+	console.log("📌 Mastra Memory: サービスロールキーが検出されました");
+	console.log("   DATABASE_URLの接続を使用します（postgresロールでRLSをバイパス）");
+} else {
+	console.warn(
+		"⚠️ Mastra Memory: SUPABASE_SERVICE_ROLE_KEY が設定されていません。\n" +
+		"RLSポリシーによってMastraテーブルへのアクセスが制限される可能性があります。"
+	);
+}
+
+if (!finalConnectionString) {
 	throw new Error(
-		"PostgreSQL connection string is required. Please set POSTGRES_CONNECTION_STRING or DATABASE_URL environment variable."
+		"PostgreSQL connection string is required. Please set DATABASE_URL environment variable."
 	);
 }
 
 // PostgreSQLストレージの初期化（Supabase）
 export const postgresStore = new PostgresStore({
-	connectionString,
+	connectionString: finalConnectionString,
 });
 
 // PgVectorの初期化（ベクトル検索用）
 export const pgVector = new PgVector({
-	connectionString,
+	connectionString: finalConnectionString,
 });
 
 // メモリシステムの設定
@@ -54,5 +71,8 @@ export async function initializeVectorIndex(
 		);
 	}
 }
+// Supabaseクライアントをエクスポート（必要に応じて使用）
+export { supabaseAdmin } from './supabase';
+
 export { memory }; // デフォルトエクスポートも追加
 export default memory;

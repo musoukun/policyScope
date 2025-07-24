@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdminAdmin } from "@/lib/supabaseAdmin-admin";
 import { PARTIES } from "@/lib/parties";
 
 export async function GET() {
 	try {
-		const { data, error } = await supabase.from("parties").select("*");
+		const { data, error } = await supabaseAdmin.from("parties").select("*");
 
 		if (error) {
 			console.error("Error fetching parties:", error);

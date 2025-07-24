@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
 import { MastraClient } from "@mastra/client-js";
 import type { PartyNewsItem } from "@/types/party";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 
 export async function GET(
 	request: Request,
@@ -9,7 +9,7 @@ export async function GET(
 ) {
 	const { id } = await params;
 	try {
-		const { data, error } = await supabase
+		const { data, error } = await supabaseAdmin
 			.from("party_news")
 			.select("*")
 			.eq("party_id", id)
@@ -47,7 +47,7 @@ export async function POST(
 		console.log("[API News Route] Mastra URL:", mastraUrl);
 		console.log("[API News Route] Party ID:", id);
 		console.log("[API News Route] Party Name:", partyName);
-		
+
 		const client = new MastraClient({
 			baseUrl: mastraUrl,
 		});
@@ -65,16 +65,16 @@ export async function POST(
 		let newsData: PartyNewsItem[];
 		try {
 			let cleanedText = response.text.trim();
-			if (cleanedText.startsWith('```json')) {
-				cleanedText = cleanedText.replace(/^```json\s*/, '');
+			if (cleanedText.startsWith("```json")) {
+				cleanedText = cleanedText.replace(/^```json\s*/, "");
 			}
-			if (cleanedText.startsWith('```')) {
-				cleanedText = cleanedText.replace(/^```\s*/, '');
+			if (cleanedText.startsWith("```")) {
+				cleanedText = cleanedText.replace(/^```\s*/, "");
 			}
-			if (cleanedText.endsWith('```')) {
-				cleanedText = cleanedText.replace(/```\s*$/, '');
+			if (cleanedText.endsWith("```")) {
+				cleanedText = cleanedText.replace(/```\s*$/, "");
 			}
-			
+
 			newsData = JSON.parse(cleanedText);
 		} catch (parseError) {
 			console.error("Failed to parse news JSON:", parseError);
@@ -84,7 +84,7 @@ export async function POST(
 			);
 		}
 
-		const { data: existing } = await supabase
+		const { data: existing } = await supabaseAdmin
 			.from("party_news")
 			.select("id")
 			.eq("party_id", id)
@@ -92,7 +92,7 @@ export async function POST(
 
 		let result;
 		if (existing) {
-			const { data, error } = await supabase
+			const { data, error } = await supabaseAdmin
 				.from("party_news")
 				.update({
 					news_data: newsData,
@@ -104,7 +104,7 @@ export async function POST(
 
 			result = { data, error };
 		} else {
-			const { data, error } = await supabase
+			const { data, error } = await supabaseAdmin
 				.from("party_news")
 				.insert({
 					party_id: id,

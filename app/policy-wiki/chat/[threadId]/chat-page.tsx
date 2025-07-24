@@ -285,13 +285,6 @@ export function ChatPage({ threadId, initialQuery }: ChatPageProps) {
 					</div>
 				</div>
 
-				{/* 右サイドバー */}
-				<div className="w-80 border-l bg-gray-50 p-6">
-					<h2 className="text-lg font-semibold mb-4">関連情報</h2>
-					<div className="text-sm text-gray-500">
-						今後、関連する政策や政党情報を表示予定
-					</div>
-				</div>
 			</div>
 		);
 	}
@@ -522,13 +515,6 @@ export function ChatPage({ threadId, initialQuery }: ChatPageProps) {
 				</div>
 			</div>
 
-			{/* 右サイドバー（将来的に実装） */}
-			<div className="w-80 border-l bg-gray-50 p-6">
-				<h2 className="text-lg font-semibold mb-4">関連情報</h2>
-				<div className="text-sm text-gray-500">
-					今後、関連する政策や政党情報を表示予定
-				</div>
-			</div>
 		</div>
 	);
 }

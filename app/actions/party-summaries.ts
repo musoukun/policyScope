@@ -1,9 +1,9 @@
 "use server";
 
-import { supabase } from "@/lib/supabase";
+import { supabaseAdminAdmin } from "@/lib/supabaseAdmin-admin";
 
 export async function getPartySummary(partyId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("party_summaries")
     .select("*")
     .eq("party_id", partyId)
@@ -19,7 +19,7 @@ export async function getPartySummary(partyId: string) {
 
 export async function savePartySummary(partyId: string, htmlContent: string) {
   // 既存のサマリーがあるか確認
-  const { data: existing } = await supabase
+  const { data: existing } = await supabaseAdmin
     .from("party_summaries")
     .select("id")
     .eq("party_id", partyId)
@@ -27,7 +27,7 @@ export async function savePartySummary(partyId: string, htmlContent: string) {
 
   if (existing) {
     // 更新
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("party_summaries")
       .update({
         html_content: htmlContent,
@@ -46,7 +46,7 @@ export async function savePartySummary(partyId: string, htmlContent: string) {
     return data;
   } else {
     // 新規作成
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("party_summaries")
       .insert({
         party_id: partyId,

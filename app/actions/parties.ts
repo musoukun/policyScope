@@ -1,6 +1,6 @@
 "use server";
 
-import { supabase } from "@/lib/supabase";
+import { supabaseAdminAdmin } from "@/lib/supabaseAdmin-admin";
 import { PARTIES } from "@/lib/parties";
 import type {
 	Party,
@@ -11,7 +11,7 @@ import type {
 import { MastraClient } from "@mastra/client-js";
 
 export async function getAllParties(): Promise<Party[]> {
-	const { data, error } = await supabase.from("parties").select("*");
+	const { data, error } = await supabaseAdmin.from("parties").select("*");
 
 	if (error) {
 		console.error("Error fetching parties:", error);
@@ -32,7 +32,7 @@ export async function getAllParties(): Promise<Party[]> {
 }
 
 export async function getPartyById(id: string): Promise<Party | null> {
-	const { data, error } = await supabase
+	const { data, error } = await supabaseAdmin
 		.from("parties")
 		.select("*")
 		.eq("id", id)
@@ -49,7 +49,7 @@ export async function getPartyById(id: string): Promise<Party | null> {
 export async function getPartySummary(
 	partyId: string
 ): Promise<PartySummary | null> {
-	const { data, error } = await supabase
+	const { data, error } = await supabaseAdmin
 		.from("party_summaries")
 		.select("*")
 		.eq("party_id", partyId)
@@ -73,7 +73,7 @@ export async function savePartySummary(
 		console.log("Attempting to save party HTML content");
 
 		// 既存のレコードがあるか確認
-		const { data: existing } = await supabase
+		const { data: existing } = await supabaseAdmin
 			.from("party_summaries")
 			.select("id")
 			.eq("party_id", partyId)
@@ -82,7 +82,7 @@ export async function savePartySummary(
 		let result;
 		if (existing) {
 			// 更新
-			const { data, error } = await supabase
+			const { data, error } = await supabaseAdmin
 				.from("party_summaries")
 				.update({
 					html_content: htmlContent,
@@ -96,7 +96,7 @@ export async function savePartySummary(
 			result = { data, error };
 		} else {
 			// 新規作成
-			const { data, error } = await supabase
+			const { data, error } = await supabaseAdmin
 				.from("party_summaries")
 				.insert({
 					party_id: partyId,
@@ -123,7 +123,7 @@ export async function savePartySummary(
 }
 
 export async function getPartyNews(partyId: string): Promise<PartyNews | null> {
-	const { data, error } = await supabase
+	const { data, error } = await supabaseAdmin
 		.from("party_news")
 		.select("*")
 		.eq("party_id", partyId)
@@ -197,7 +197,7 @@ export async function updatePartyNews(
 		}
 
 		// 既存のレコードがあるか確認
-		const { data: existing } = await supabase
+		const { data: existing } = await supabaseAdmin
 			.from("party_news")
 			.select("id")
 			.eq("party_id", partyId)
@@ -206,7 +206,7 @@ export async function updatePartyNews(
 		let result;
 		if (existing) {
 			// 更新
-			const { data, error } = await supabase
+			const { data, error } = await supabaseAdmin
 				.from("party_news")
 				.update({
 					news_data: newsData,
@@ -219,7 +219,7 @@ export async function updatePartyNews(
 			result = { data, error };
 		} else {
 			// 新規作成
-			const { data, error } = await supabase
+			const { data, error } = await supabaseAdmin
 				.from("party_news")
 				.insert({
 					party_id: partyId,
