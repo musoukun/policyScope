@@ -1,16 +1,16 @@
 import type { Party } from "@/types/party";
 
-// 政党のカラーコード
+// 政党のカラーコード（公式カラーに基づく）
 export const PARTY_COLORS: Record<string, string> = {
-  ldp: "#DC143C",        // 自民党 - 赤
-  komeito: "#FFD700",    // 公明党 - 金色
-  cdp: "#1E90FF",        // 立憲民主党 - 青
-  ishin: "#90EE90",      // 維新 - 緑
-  jcp: "#FF0000",        // 共産党 - 赤
-  dpfp: "#FFA500",       // 国民民主党 - オレンジ
-  reiwa: "#FF69B4",      // れいわ - ピンク
-  sanseito: "#800080",   // 参政党 - 紫
-  team_mirai: "#00CED1", // チームみらい - ターコイズ
+  ldp: "#C7000B",        // 自民党 - 赤（自民党公式の赤）
+  komeito: "#FF69B4",    // 公明党 - ピンク（公明党の伝統的なピンク）
+  cdp: "#004EA2",        // 立憲民主党 - 立憲ブルー（公式の青）
+  ishin: "#32CD32",      // 維新 - 緑（維新グリーン）
+  jcp: "#7B68EE",        // 共産党 - 紫（赤を避けて紫を使用）
+  dpfp: "#FF8C00",       // 国民民主党 - オレンジ（濃い目のオレンジ）
+  reiwa: "#FF1493",      // れいわ - ショッキングピンク（猫の肉球色）
+  sanseito: "#FF6600",   // 参政党 - オレンジ（橙色・だいだい色）
+  team_mirai: "#90EE90", // チームみらい - パステルグリーン（くすみグリーン）
 };
 
 export const PARTIES: Party[] = [
