@@ -5,10 +5,7 @@ import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getPartyResearchAgent } from "@/lib/mastra-client";
-import {
-	getPartySummary,
-	savePartySummary,
-} from "@/lib/api/parties";
+import { getPartySummary, savePartySummary } from "@/lib/api/parties";
 
 interface PartySummaryProps {
 	party: Party;
@@ -212,7 +209,7 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 						className="w-full min-h-[800px] border-0"
 						sandbox="allow-scripts"
 						title="政党情報サマリー"
-						style={{ height: "1200px" }}
+						style={{ height: "2400px" }}
 					/>
 
 					{/* メタデータ */}
