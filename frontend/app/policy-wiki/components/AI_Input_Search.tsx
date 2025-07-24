@@ -27,8 +27,14 @@ export default function AI_Input_Search() {
 	const [isFocused, setIsFocused] = useState(false);
 
 	const handleSubmit = () => {
-		setValue("");
-		adjustHeight(true);
+		if (value.trim()) {
+			// 新規スレッドIDを生成（UUID形式）
+			const newThreadId = crypto.randomUUID();
+			// 新しいタブでチャットページを開き、質問をパラメータとして渡す
+			window.open(`/policy-wiki/chat/${newThreadId}?q=${encodeURIComponent(value)}`, '_blank');
+			setValue("");
+			adjustHeight(true);
+		}
 	};
 
 	const handleFocus = () => {
@@ -68,7 +74,7 @@ export default function AI_Input_Search() {
 						<Textarea
 							id="ai-input-04"
 							value={value}
-							placeholder="Search the web..."
+							placeholder="政策やマニフェストについて質問..."
 							className="w-full rounded-xl rounded-b-none px-4 py-3 bg-black/5 dark:bg-white/5 border-none dark:text-white placeholder:text-black/70 dark:placeholder:text-white/70 resize-none focus-visible:ring-0 leading-[1.2]"
 							ref={textareaRef}
 							onFocus={handleFocus}

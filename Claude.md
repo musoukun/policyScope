@@ -2,24 +2,28 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-# start
+# 基本ルール
+
+## 日本語対応
 日本語ですべて回答して下さい
 
-- すぐにプログラムや、資料のサンプルを作成せずに、端的に結論を回答する。
-- 嘘をつかない
-- 憶測も嘘に当たる。
+## 回答方針
+- 端的に結論を回答する
+- 嘘をつかない（憶測も嘘に当たる）
+- 不要なたとえを書かない
+- 実装前に最新のAPIの使い方を確認する
+- npm run devコマンドは入力しない（ユーザが起動する）
 
-過去にあなたついた嘘の例：2019年の事例から～は合法です。→実際にそんな事例はなく、勝手に作成して回答していた。
-
-- 不要なたとえを書かない：一言で言うと「風邪薬1錠で治るのに、10錠飲むようなもの。治るどころか毒になる」 ←こういうのいらない
-
-- 実装する前に実装する内容が最新のものか、APIの使い方が正しいかを必ずuse Context7で検索する。
-- mastraは標準でAPIサーバーになるためよほど特殊なカスタムAPI以外は実装不要です。
-- npm run devコマンドは入力しない。常にユーザが起動する事。
-- 
+## Mastra Framework
+- Mastraは標準でAPIサーバーになるため、特殊なカスタムAPI以外は実装不要
+- バックエンドのMastraインスタンスは`http://localhost:4111`でAPIサーバーとして稼働
+- mastraのAPIを確認する必要は無くて、基本的に、import { MastraClient } from "@mastra/client-js";
+ 
+const client = new MastraClient();
+でAPIを実行できる。詳しくはuse context7で調査して。
 # PolicyScope コードベース概要
 
-PolicyScopeは政党政策分析Wikiアプリケーションで、Next.jsベースのフルスタックアプリケーションです。
+PolicyScopeは政党の政策を包括的に分析・比較するWebアプリケーションで、Next.jsベースのフロントエンドとMastra Frameworkベースのバックエンドで構成されています。
 
 ## 開発コマンド
 
@@ -31,6 +35,14 @@ npm run start      # プロダクションサーバー起動
 npm run lint       # ESLint実行
 ```
 
+### バックエンド (/backend)
+```bash
+npm run dev        # Mastra開発サーバー起動 (http://localhost:4111)
+npm run build      # Mastraビルド
+npm run start      # Mastraプロダクションサーバー起動
+```
+注意: Node.js 20.9.0以上が必要
+
 ## アーキテクチャ
 
 - **フレームワーク**: Next.js 15.3.2 (App Router)
@@ -38,31 +50,43 @@ npm run lint       # ESLint実行
 - **AI統合**: 
   - Vercel AI SDK (ai) - ストリーミングチャット
   - @assistant-ui - チャットUIコンポーネント
-  - Google Gemini (@ai-sdk/google) - 政策分析AI
-  - Mastra Framework - AIエージェント管理
+  - Google Gemini 2.5 Flash (Grounding機能付き) - 政策分析AI
+  - Mastra Framework - AIエージェント・ワークフロー管理
 - **データベース**: Supabase (PostgreSQL + pgvector拡張)
 - **主要ディレクトリ**:
   - `frontend/app/actions/` - Server Actions（parties.ts - 政党データCRUD）
   - `frontend/app/api/` - API Routes（chat、research-party - Server Actionsへ移行推奨）
-  - `frontend/app/demo/` - 手動テスト用ページ（現在party-data-testのみ）
+  - `frontend/app/demo/` - 手動テスト用ページ（現在simple-chatのみ）
   - `frontend/app/policy-wiki/` - メインアプリケーション
   - `frontend/lib/` - ユーティリティ（supabase.ts、parties.ts、mastra/）
   - `frontend/lib/mastra/agents/` - AIエージェント設定とスキーマ
   - `frontend/components/` - 共通UIコンポーネント（shadcn/ui、assistant-ui）
   - `frontend/types/` - 型定義（party.ts）
+  - `backend/src/mastra/` - バックエンドディレクトリ
+    - `agents/` - AIエージェント（party-research-agent.ts、party-assistant.ts、html-artifact-agent.ts）
+    - `workflows/` - ワークフロー（party-research-workflow.ts）
+    - `tools/` - カスタムツール（artifacts.ts）
+    - `memory.ts` - メモリ管理
+    - `index.ts` - Mastraインスタンスとエクスポート
   - `supabase/migrations/` - データベースマイグレーション
   - `requirements/` - 要件定義ドキュメント
   - `doc/` - プロジェクトドキュメント（画像など）
 
 ## 環境変数
 
-必須の環境変数（`.env.local`ファイル）:
+### フロントエンド（`.env.local`ファイル）:
 ```
-GOOGLE_GENERATIVE_AI_API_KEY=  # Google Gemini API（政策分析）
 NEXT_PUBLIC_SUPABASE_URL=      # Supabase URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY= # Supabase公開キー
 OPENAI_API_KEY=                # OpenAI API（チャット機能で使用）
+MASTRA_API_URL=                # Mastra APIエンドポイント（デフォルト: http://localhost:4111）
 CRON_SECRET=                   # Vercel Cronジョブ認証用（未実装）
+```
+
+### バックエンド（`.env`ファイル）:
+```
+GOOGLE_GENERATIVE_AI_API_KEY=  # Google Gemini API（政策分析）
+PORT=                          # APIサーバーポート（デフォルト: 4111）
 ```
 
 ## データベース構造
@@ -103,6 +127,14 @@ npx supabase db push --password your_password
 
 ## Mastra FrameworkとAIエージェント
 
+### バックエンドアーキテクチャ
+Mastraは`http://localhost:4111`でAPIサーバーとして稼働し、以下のエージェントとワークフローを提供：
+
+- **partyResearchAgent** - 政策研究用メインエージェント
+- **partyAssistant** - 政党情報アシスタント
+- **htmlArtifactAgent** - HTMLアーティファクト生成
+- **partyResearchWorkflow** - 政策研究ワークフロー
+
 ### 政策研究エージェント
 `/api/research-party` エンドポイントで使用される政策研究エージェントは、5つの段階で詳細な政党情報を収集します：
 
@@ -133,10 +165,10 @@ npx supabase db push --password your_password
   - 基本情報、政策分析、支持基盤、最新動向、評価の5段階
 - 基本的なUIコンポーネント（shadcn/ui統合）
 
-### 未実装（CLAUDE.mdに記載されているが未実装）
+### 未実装
 - Vector DB検索機能（pgvector）
 - Cronジョブによる自動更新（`/api/cron/update-party-embeddings`）
-- デモページ（db-setup、fix-rls、update-test、vector-search）
+- テストコマンド（フロントエンド・バックエンド両方）
 
 ## 依存パッケージ状況
 
@@ -165,6 +197,7 @@ npx supabase db push --password your_password
 - EXAMPLE.mdやSETUP.mdやWORKFLOW.ｍdなど指示されていない資料を作成するのは、文字数の無駄遣いになるので、簡潔に使い方を回答してくれたらよいです。
 
 ## 全体的な哲学：保守的、良心的、失敗を恐れる
+[重要]- use client / useEffect / useState は最小限、まず RSC
 
 ### 保守的であること
 - 明確に要求されたことのみを実装する
@@ -207,14 +240,12 @@ npx supabase db push --password your_password
 ## 重要：明示的な許可なしに進行してはならない
 **人間からの明示的な許可なしに、作業の次のステップや段階を開始してはならない。**
 
-これは以下を意味する：
 - 計画作成後に実装を開始しない - 明示的な承認を待つ
 - チェックポイント完了後に次の段階に移らない - 明示的な指示を待つ
 - 新機能を開始しない - 明示的な指示を待つ
 - 完了報告後に作業を続けない - 進行への明示的な確認を待つ
-- 暗示された許可を想定したり、続行すべきと推測しない
 
-**次のステップが明らかに見えたり、以前に議論されていても、人間があなたに進行を明示的に指示するまで常に停止して待つ。** これによりスコープクリープを防ぎ、整合性を確保し、開発プロセスの人間による制御を維持する。
+**次のステップが明らかでも、人間の明示的な指示を待つ。**
 
 # Next.jsを利用するときの戦略
 

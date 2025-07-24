@@ -1,24 +1,49 @@
-import { openai } from "@ai-sdk/openai";
-import { frontendTools } from "@assistant-ui/react-ai-sdk";
-import { streamText } from "ai";
+import { MastraClient } from "@mastra/client-js";
+import { StreamingTextResponse } from "ai";
 
 export const runtime = "edge";
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
-  const { messages, system, tools } = await req.json();
+  const body = await req.json();
+  const { messages } = body;
+  const threadId = body.threadId || body.body?.threadId;
 
-  const result = streamText({
-    model: openai("gpt-4o"),
-    messages,
-    // forward system prompt and tools from the frontend
-    toolCallStreaming: true,
-    system,
-    tools: {
-      ...frontendTools(tools),
-    },
-    onError: console.log,
+  const client = new MastraClient({
+    baseUrl: process.env.MASTRA_API_URL || "http://localhost:4111",
   });
 
-  return result.toDataStreamResponse();
+  const agent = client.getAgent("partyAssistant");
+
+  try {
+    // threadIdがある場合のみ渡す
+    const streamParams: any = {
+      messages,
+    };
+    
+    if (threadId) {
+      streamParams.threadId = threadId;
+      streamParams.resourceId = "partyAssistant";
+    }
+
+    const response = await agent.stream(streamParams);
+
+    // Mastraのストリームレスポンスを返す
+    return new Response(response.body, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+      },
+    });
+  } catch (error) {
+    console.error("Error in chat API:", error);
+    return new Response(
+      JSON.stringify({ error: "Failed to process chat request" }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
 }
