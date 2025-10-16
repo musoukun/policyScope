@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { RefreshCw, ExternalLink } from "lucide-react";
 import type { Party, PartyNews as PartyNewsType } from "@/types/party";
 import { getPartyNews, updatePartyNews } from "@/lib/api/parties";
+import { canMakeApiCall, incrementApiCallCount } from "@/app/actions/api-limits";
 import { formatDistanceToNow } from "date-fns";
 import { ja } from "date-fns/locale";
 
@@ -16,6 +17,7 @@ export function PartyNews({ party }: PartyNewsProps) {
 	const [newsData, setNewsData] = useState<PartyNewsType | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [updating, setUpdating] = useState(false);
+	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
 		const loadNews = async () => {
@@ -43,8 +45,27 @@ export function PartyNews({ party }: PartyNewsProps) {
 			"party.name:",
 			party.name
 		);
+
+		// API呼び出し制限をチェック
+		const limitCheck = await canMakeApiCall("news_fetch");
+		if (!limitCheck.canCall) {
+			setError(
+				`本日のニュース取得回数の上限（${limitCheck.limit}回）に達しました。明日またお試しください。`
+			);
+			return;
+		}
+
 		setUpdating(true);
+		setError(null);
 		try {
+			// API呼び出しカウントを増加
+			const incrementSuccess = await incrementApiCallCount("news_fetch");
+			if (!incrementSuccess) {
+				setError("API呼び出し制限の更新に失敗しました");
+				setUpdating(false);
+				return;
+			}
+
 			console.log("🔄 updatePartyNews呼び出し開始");
 			const updatedNews = await updatePartyNews(party.id, party.name);
 			console.log("🔄 updatePartyNews結果:", updatedNews);
@@ -55,6 +76,7 @@ export function PartyNews({ party }: PartyNewsProps) {
 			}
 		} catch (error) {
 			console.error("ニュースの更新に失敗しました:", error);
+			setError("ニュースの更新に失敗しました");
 		} finally {
 			setUpdating(false);
 		}
@@ -93,6 +115,13 @@ export function PartyNews({ party }: PartyNewsProps) {
 
 	return (
 		<div className="space-y-4">
+			{/* エラー表示 */}
+			{error && (
+				<div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-sm">
+					{error}
+				</div>
+			)}
+
 			<div className="flex justify-between items-center mb-4">
 				<h3 className="text-base font-semibold">最新ニュース</h3>
 				<div className="flex items-center gap-2">

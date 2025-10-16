@@ -7,6 +7,7 @@ import { RefreshCw } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { getPartyResearchAgent } from "@/lib/mastra-client";
 import { getPartySummary, savePartySummary } from "@/lib/api/parties";
+import { canMakeApiCall, incrementApiCallCount } from "@/app/actions/api-limits";
 import { motion, useAnimate } from "framer-motion";
 
 interface PartySummaryProps {
@@ -174,6 +175,15 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 		console.log("📊 政党名:", party.name);
 		console.log("🆔 政党ID:", party.id);
 
+		// API呼び出し制限をチェック
+		const limitCheck = await canMakeApiCall("wiki_generation");
+		if (!limitCheck.canCall) {
+			setError(
+				`本日のWiki生成回数の上限（${limitCheck.limit}回）に達しました。明日またお試しください。`
+			);
+			return;
+		}
+
 		setIsGenerating(true);
 		setError(null);
 		setGeneratedHtml("");
@@ -253,6 +263,14 @@ export function PartySummary({ party, onSummaryUpdate }: PartySummaryProps) {
 		setGeneratedHtml(loadingHtml);
 
 		try {
+			// API呼び出しカウントを増加
+			const incrementSuccess = await incrementApiCallCount("wiki_generation");
+			if (!incrementSuccess) {
+				setError("API呼び出し制限の更新に失敗しました");
+				setIsGenerating(false);
+				return;
+			}
+
 			const agent = getPartyResearchAgent();
 			const response = await agent.stream({
 				messages: [

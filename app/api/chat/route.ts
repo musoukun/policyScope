@@ -14,7 +14,8 @@ export async function POST(req: Request) {
 	});
 
 	// Mock応答を返す
-	const mockMessage = "AIの解答のサンプルです。現在はAI質問機能は料金がかかるためサンプル表示しています。詳しくは製作者にお問い合わせください。";
+	const mockMessage =
+		"AIの解答のサンプルです。現在はAI質問機能は非公開です。サンプルメッセージを表示しています。詳しくは製作者にお問い合わせください。";
 
 	// Vercel AI SDKのストリーミング形式に合わせたMock応答を生成
 	const encoder = new TextEncoder();
@@ -26,7 +27,7 @@ export async function POST(req: Request) {
 				const data = `0:"${chunk}"\n`;
 				controller.enqueue(encoder.encode(data));
 				// 少し遅延を入れてストリーミング感を出す
-				await new Promise(resolve => setTimeout(resolve, 20));
+				await new Promise((resolve) => setTimeout(resolve, 20));
 			}
 			controller.close();
 		},
