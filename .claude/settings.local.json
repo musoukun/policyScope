@@ -20,7 +20,8 @@
       "Bash(touch:*)",
       "Bash(dir:*)",
       "Bash(Remove-Item -Path \"D:\\develop\\PolicyScope\\frontend\\app\\api\\chat\\[threadId]\\messages\" -Recurse -Force)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(Remove-Item -Path \"app/demo/policy-wiki-sample\" -Recurse -Force)"
     ],
     "deny": []
   }

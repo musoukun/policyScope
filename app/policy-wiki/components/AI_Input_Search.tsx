@@ -28,23 +28,29 @@ export default function AI_Input_Search() {
 		if (value.trim()) {
 			try {
 				// まずMastraでスレッドを作成
-				const response = await fetch('/api/chat/thread/create', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ 
+				const response = await fetch("/api/chat/thread/create", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
 						title: value.substring(0, 50) + "...",
-						initialQuery: value 
-					})
+						initialQuery: value,
+					}),
 				});
-				
+
 				const data = await response.json();
-				
+
 				if (data.success && data.threadId) {
-					console.log("[AI_Input_Search] スレッド作成成功:", data.threadId);
-					
+					console.log(
+						"[AI_Input_Search] スレッド作成成功:",
+						data.threadId
+					);
+
 					// 新しいタブで開く（URLパラメータ付き）
-					window.open(`/policy-wiki/chat/${data.threadId}?q=${encodeURIComponent(value)}`, '_blank');
-					
+					window.open(
+						`/policy-wiki/chat/${data.threadId}?q=${encodeURIComponent(value)}`,
+						"_blank"
+					);
+
 					setValue("");
 					adjustHeight(true);
 				} else {
@@ -93,7 +99,7 @@ export default function AI_Input_Search() {
 						<Textarea
 							id="ai-input-04"
 							value={value}
-							placeholder="政策やマニフェストについて質問..."
+							placeholder="政策やマニフェストについて質問...（現在この機能はサンプルです）"
 							className="w-full rounded-xl rounded-b-none px-4 py-3 bg-black/5 dark:bg-white/5 border-none dark:text-white placeholder:text-black/70 dark:placeholder:text-white/70 resize-none focus-visible:ring-0 leading-[1.2]"
 							ref={textareaRef}
 							onFocus={handleFocus}

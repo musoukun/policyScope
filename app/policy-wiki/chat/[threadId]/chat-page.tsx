@@ -263,7 +263,7 @@ export function ChatPage({ threadId, initialQuery }: ChatPageProps) {
 								<div className="relative flex flex-col rounded-xl transition-all duration-200 w-full text-left cursor-text ring-1 ring-black/10 dark:ring-white/10 bg-white/70 dark:bg-black/70 backdrop-blur-sm">
 									<div className="overflow-y-auto max-h-[200px]">
 										<Textarea
-											placeholder="政策やマニフェストについて質問..."
+											placeholder="政策やマニフェストについて質問...（現在この機能はサンプルです）"
 											className="w-full rounded-xl rounded-b-none px-4 py-3 bg-black/5 dark:bg-white/5 border-none dark:text-white placeholder:text-black/70 dark:placeholder:text-white/70 resize-none focus-visible:ring-0 leading-[1.2]"
 											disabled
 										/>
@@ -284,7 +284,6 @@ export function ChatPage({ threadId, initialQuery }: ChatPageProps) {
 						</div>
 					</div>
 				</div>
-
 			</div>
 		);
 	}
@@ -340,7 +339,8 @@ export function ChatPage({ threadId, initialQuery }: ChatPageProps) {
 														Array.isArray(
 															content
 														) &&
-														(content as any[]).length > 0
+														(content as any[])
+															.length > 0
 													) {
 														const firstItem =
 															content[0] as any;
@@ -389,8 +389,9 @@ export function ChatPage({ threadId, initialQuery }: ChatPageProps) {
 																Array.isArray(
 																	content
 																) &&
-																(content as any[]).length >
-																	0
+																(
+																	content as any[]
+																).length > 0
 															) {
 																const firstItem =
 																	content[0] as any;
@@ -466,7 +467,7 @@ export function ChatPage({ threadId, initialQuery }: ChatPageProps) {
 									<Textarea
 										ref={textareaRef}
 										value={input}
-										placeholder="政策やマニフェストについて質問..."
+										placeholder="政策やマニフェストについて質問...（現在この機能はサンプルです）"
 										className="w-full rounded-xl rounded-b-none px-4 py-3 bg-black/5 dark:bg-white/5 border-none dark:text-white placeholder:text-black/70 dark:placeholder:text-white/70 resize-none focus-visible:ring-0 leading-[1.2]"
 										onFocus={() => {}}
 										onBlur={() => {}}
@@ -514,7 +515,6 @@ export function ChatPage({ threadId, initialQuery }: ChatPageProps) {
 					</form>
 				</div>
 			</div>
-
 		</div>
 	);
 }
