@@ -41,7 +41,7 @@ cd mastra && npm install
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 OPENAI_API_KEY=your_openai_api_key
-MASTRA_API_URL=http://localhost:4111
+MASTRA_API_URL=mastra_url
 ```
 
 2. バックエンド用 `mastra/.env` を作成:
